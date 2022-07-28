@@ -1,0 +1,619 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3C84F2502892373600016E80 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C84F24F2892373600016E80 /* AppDelegate.swift */; };
+		3C84F2542892373600016E80 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C84F2532892373600016E80 /* ViewController.swift */; };
+		3C84F2572892373600016E80 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3C84F2552892373600016E80 /* Main.storyboard */; };
+		3C84F2592892373900016E80 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3C84F2582892373900016E80 /* Assets.xcassets */; };
+		3C84F25C2892373900016E80 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3C84F25A2892373900016E80 /* LaunchScreen.storyboard */; };
+		3C84F2672892373900016E80 /* ZoomableRulerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C84F2662892373900016E80 /* ZoomableRulerTests.swift */; };
+		3C84F2712892373900016E80 /* ZoomableRulerUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C84F2702892373900016E80 /* ZoomableRulerUITests.swift */; };
+		3C84F2732892373900016E80 /* ZoomableRulerUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C84F2722892373900016E80 /* ZoomableRulerUITestsLaunchTests.swift */; };
+		3C84F28128923A3D00016E80 /* ZoomableLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C84F28028923A3D00016E80 /* ZoomableLayer.swift */; };
+		3C84F28328923A6000016E80 /* ZoomableRuler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C84F28228923A6000016E80 /* ZoomableRuler.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3C84F2632892373900016E80 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3C84F2442892373600016E80 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3C84F24B2892373600016E80;
+			remoteInfo = ZoomableRuler;
+		};
+		3C84F26D2892373900016E80 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3C84F2442892373600016E80 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3C84F24B2892373600016E80;
+			remoteInfo = ZoomableRuler;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		3C84F24C2892373600016E80 /* ZoomableRuler.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZoomableRuler.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3C84F24F2892373600016E80 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		3C84F2532892373600016E80 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		3C84F2562892373600016E80 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		3C84F2582892373900016E80 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3C84F25B2892373900016E80 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		3C84F25D2892373900016E80 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3C84F2622892373900016E80 /* ZoomableRulerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZoomableRulerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3C84F2662892373900016E80 /* ZoomableRulerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableRulerTests.swift; sourceTree = "<group>"; };
+		3C84F26C2892373900016E80 /* ZoomableRulerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZoomableRulerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3C84F2702892373900016E80 /* ZoomableRulerUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableRulerUITests.swift; sourceTree = "<group>"; };
+		3C84F2722892373900016E80 /* ZoomableRulerUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableRulerUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		3C84F28028923A3D00016E80 /* ZoomableLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableLayer.swift; sourceTree = "<group>"; };
+		3C84F28228923A6000016E80 /* ZoomableRuler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableRuler.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3C84F2492892373600016E80 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3C84F25F2892373900016E80 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3C84F2692892373900016E80 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3C84F2432892373600016E80 = {
+			isa = PBXGroup;
+			children = (
+				3C84F24E2892373600016E80 /* ZoomableRuler */,
+				3C84F2652892373900016E80 /* ZoomableRulerTests */,
+				3C84F26F2892373900016E80 /* ZoomableRulerUITests */,
+				3C84F24D2892373600016E80 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3C84F24D2892373600016E80 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3C84F24C2892373600016E80 /* ZoomableRuler.app */,
+				3C84F2622892373900016E80 /* ZoomableRulerTests.xctest */,
+				3C84F26C2892373900016E80 /* ZoomableRulerUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3C84F24E2892373600016E80 /* ZoomableRuler */ = {
+			isa = PBXGroup;
+			children = (
+				3C84F27F28923A0100016E80 /* source */,
+				3C84F24F2892373600016E80 /* AppDelegate.swift */,
+				3C84F2532892373600016E80 /* ViewController.swift */,
+				3C84F2552892373600016E80 /* Main.storyboard */,
+				3C84F2582892373900016E80 /* Assets.xcassets */,
+				3C84F25A2892373900016E80 /* LaunchScreen.storyboard */,
+				3C84F25D2892373900016E80 /* Info.plist */,
+			);
+			path = ZoomableRuler;
+			sourceTree = "<group>";
+		};
+		3C84F2652892373900016E80 /* ZoomableRulerTests */ = {
+			isa = PBXGroup;
+			children = (
+				3C84F2662892373900016E80 /* ZoomableRulerTests.swift */,
+			);
+			path = ZoomableRulerTests;
+			sourceTree = "<group>";
+		};
+		3C84F26F2892373900016E80 /* ZoomableRulerUITests */ = {
+			isa = PBXGroup;
+			children = (
+				3C84F2702892373900016E80 /* ZoomableRulerUITests.swift */,
+				3C84F2722892373900016E80 /* ZoomableRulerUITestsLaunchTests.swift */,
+			);
+			path = ZoomableRulerUITests;
+			sourceTree = "<group>";
+		};
+		3C84F27F28923A0100016E80 /* source */ = {
+			isa = PBXGroup;
+			children = (
+				3C84F28028923A3D00016E80 /* ZoomableLayer.swift */,
+				3C84F28228923A6000016E80 /* ZoomableRuler.swift */,
+			);
+			path = source;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3C84F24B2892373600016E80 /* ZoomableRuler */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3C84F2762892373900016E80 /* Build configuration list for PBXNativeTarget "ZoomableRuler" */;
+			buildPhases = (
+				3C84F2482892373600016E80 /* Sources */,
+				3C84F2492892373600016E80 /* Frameworks */,
+				3C84F24A2892373600016E80 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ZoomableRuler;
+			productName = ZoomableRuler;
+			productReference = 3C84F24C2892373600016E80 /* ZoomableRuler.app */;
+			productType = "com.apple.product-type.application";
+		};
+		3C84F2612892373900016E80 /* ZoomableRulerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3C84F2792892373900016E80 /* Build configuration list for PBXNativeTarget "ZoomableRulerTests" */;
+			buildPhases = (
+				3C84F25E2892373900016E80 /* Sources */,
+				3C84F25F2892373900016E80 /* Frameworks */,
+				3C84F2602892373900016E80 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3C84F2642892373900016E80 /* PBXTargetDependency */,
+			);
+			name = ZoomableRulerTests;
+			productName = ZoomableRulerTests;
+			productReference = 3C84F2622892373900016E80 /* ZoomableRulerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		3C84F26B2892373900016E80 /* ZoomableRulerUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3C84F27C2892373900016E80 /* Build configuration list for PBXNativeTarget "ZoomableRulerUITests" */;
+			buildPhases = (
+				3C84F2682892373900016E80 /* Sources */,
+				3C84F2692892373900016E80 /* Frameworks */,
+				3C84F26A2892373900016E80 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3C84F26E2892373900016E80 /* PBXTargetDependency */,
+			);
+			name = ZoomableRulerUITests;
+			productName = ZoomableRulerUITests;
+			productReference = 3C84F26C2892373900016E80 /* ZoomableRulerUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3C84F2442892373600016E80 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1340;
+				LastUpgradeCheck = 1340;
+				TargetAttributes = {
+					3C84F24B2892373600016E80 = {
+						CreatedOnToolsVersion = 13.4.1;
+					};
+					3C84F2612892373900016E80 = {
+						CreatedOnToolsVersion = 13.4.1;
+						TestTargetID = 3C84F24B2892373600016E80;
+					};
+					3C84F26B2892373900016E80 = {
+						CreatedOnToolsVersion = 13.4.1;
+						TestTargetID = 3C84F24B2892373600016E80;
+					};
+				};
+			};
+			buildConfigurationList = 3C84F2472892373600016E80 /* Build configuration list for PBXProject "ZoomableRuler" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 3C84F2432892373600016E80;
+			productRefGroup = 3C84F24D2892373600016E80 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3C84F24B2892373600016E80 /* ZoomableRuler */,
+				3C84F2612892373900016E80 /* ZoomableRulerTests */,
+				3C84F26B2892373900016E80 /* ZoomableRulerUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3C84F24A2892373600016E80 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3C84F25C2892373900016E80 /* LaunchScreen.storyboard in Resources */,
+				3C84F2592892373900016E80 /* Assets.xcassets in Resources */,
+				3C84F2572892373600016E80 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3C84F2602892373900016E80 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3C84F26A2892373900016E80 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3C84F2482892373600016E80 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3C84F2542892373600016E80 /* ViewController.swift in Sources */,
+				3C84F28328923A6000016E80 /* ZoomableRuler.swift in Sources */,
+				3C84F2502892373600016E80 /* AppDelegate.swift in Sources */,
+				3C84F28128923A3D00016E80 /* ZoomableLayer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3C84F25E2892373900016E80 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3C84F2672892373900016E80 /* ZoomableRulerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3C84F2682892373900016E80 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3C84F2732892373900016E80 /* ZoomableRulerUITestsLaunchTests.swift in Sources */,
+				3C84F2712892373900016E80 /* ZoomableRulerUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3C84F2642892373900016E80 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3C84F24B2892373600016E80 /* ZoomableRuler */;
+			targetProxy = 3C84F2632892373900016E80 /* PBXContainerItemProxy */;
+		};
+		3C84F26E2892373900016E80 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3C84F24B2892373600016E80 /* ZoomableRuler */;
+			targetProxy = 3C84F26D2892373900016E80 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		3C84F2552892373600016E80 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				3C84F2562892373600016E80 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		3C84F25A2892373900016E80 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				3C84F25B2892373900016E80 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		3C84F2742892373900016E80 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		3C84F2752892373900016E80 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		3C84F2772892373900016E80 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H3TQ8GAVQ2;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ZoomableRuler/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.adrian.ZoomableRuler;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = DEV;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3C84F2782892373900016E80 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H3TQ8GAVQ2;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ZoomableRuler/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.adrian.ZoomableRuler;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = DEV;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		3C84F27A2892373900016E80 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.adrian.ZoomableRulerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ZoomableRuler.app/ZoomableRuler";
+			};
+			name = Debug;
+		};
+		3C84F27B2892373900016E80 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.adrian.ZoomableRulerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ZoomableRuler.app/ZoomableRuler";
+			};
+			name = Release;
+		};
+		3C84F27D2892373900016E80 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.adrian.ZoomableRulerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ZoomableRuler;
+			};
+			name = Debug;
+		};
+		3C84F27E2892373900016E80 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.adrian.ZoomableRulerUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ZoomableRuler;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3C84F2472892373600016E80 /* Build configuration list for PBXProject "ZoomableRuler" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3C84F2742892373900016E80 /* Debug */,
+				3C84F2752892373900016E80 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3C84F2762892373900016E80 /* Build configuration list for PBXNativeTarget "ZoomableRuler" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3C84F2772892373900016E80 /* Debug */,
+				3C84F2782892373900016E80 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3C84F2792892373900016E80 /* Build configuration list for PBXNativeTarget "ZoomableRulerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3C84F27A2892373900016E80 /* Debug */,
+				3C84F27B2892373900016E80 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3C84F27C2892373900016E80 /* Build configuration list for PBXNativeTarget "ZoomableRulerUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3C84F27D2892373900016E80 /* Debug */,
+				3C84F27E2892373900016E80 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 3C84F2442892373600016E80 /* Project object */;
+}
