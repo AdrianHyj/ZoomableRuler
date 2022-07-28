@@ -35,25 +35,28 @@ class ZoomableRuler: UIControl {
 
         scrollView.frame = bounds
         scrollView.contentSize = CGSize(width: 90 * scrollView.frame.width, height: scrollView.frame.size.height)
-
-        zoomableLayer.frame = CGRect(x: 0,
+        zoomableLayer.frame = CGRect(x: -scrollView.frame.size.width,
                                      y: 0,
-                                     width: scrollView.frame.size.width*3,
+                                     width: scrollView.frame.size.width * 3,
                                      height: scrollView.frame.size.height)
-                    zoomableLayer.setNeedsDisplay(CGRect(x: scrollView.contentOffset.x - scrollView.frame.size.width,
-                                                         y: 0,
-                                                         width: scrollView.frame.size.width * 3,
-                                                         height: scrollView.frame.size.height))
     }
 }
 
 // MARK: - UIScrollViewDelegate
 extension ZoomableRuler: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        if (scrollView.contentOffset.x > zoomableLayer.frame.maxX - scrollView.frame.self.width) || (scrollView.contentOffset.x < zoomableLayer.frame.minX) {
+        if scrollView.contentOffset.x > zoomableLayer.frame.maxX - scrollView.frame.size.width {
             CATransaction.begin()
             CATransaction.setDisableActions(true)
             zoomableLayer.frame = CGRect(x: scrollView.contentOffset.x - scrollView.frame.size.width,
+                                         y: 0,
+                                         width: scrollView.frame.size.width * 3,
+                                         height: scrollView.frame.size.height)
+            CATransaction.commit()
+        } else if scrollView.contentOffset.x < zoomableLayer.frame.minX + scrollView.frame.size.width {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            zoomableLayer.frame = CGRect(x: scrollView.contentOffset.x - scrollView.frame.size.width*2,
                                          y: 0,
                                          width: scrollView.frame.size.width * 3,
                                          height: scrollView.frame.size.height)

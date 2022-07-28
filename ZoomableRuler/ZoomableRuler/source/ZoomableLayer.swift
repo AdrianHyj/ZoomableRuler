@@ -15,11 +15,11 @@ class ZoomableLayer: CALayer {
     }
 
     override func setNeedsDisplay(_ r: CGRect) {
-        CATransaction.begin()
-        CATransaction.setDisableActions(true)
+//        CATransaction.begin()
+//        CATransaction.setDisableActions(true)
         // work
         drawFrame(in: r)
-        CATransaction.commit()
+//        CATransaction.commit()
     }
 
     private func drawFrame(in rect: CGRect) {
@@ -30,14 +30,16 @@ class ZoomableLayer: CALayer {
             let hourTextWidth = attributeString.size().width
             let hourTextHeight = attributeString.size().height
 
-            let lineSpace: CGFloat = 50.0
-            let numberOfLine: Int = Int(rect.width / lineSpace)
+            let lineWidth: CGFloat = 1.0
+            let lineSpace: CGFloat = 24.0
+            let firstX: CGFloat = 374.5 - CGFloat(Int((rect.size.width/3 - lineWidth/2)/(lineSpace+lineWidth))*Int(lineSpace+lineWidth)) - (lineWidth + lineSpace)
+            let numberOfLine: Int = Int(rect.width / (lineSpace+lineWidth))
             print(">>>>>>>>> rect :\(rect) >>>>>>>>>>")
 //            ctx.beginPath()
             for i in 0 ..< numberOfLine {
-                let position: CGFloat = CGFloat(i)*lineSpace
+                let position: CGFloat = CGFloat(i)*(lineSpace+lineWidth)
 
-                let upperLineRect = CGRect(x: -0.5 + position, y: 0, width: 1, height: 6)
+                let upperLineRect = CGRect(x: firstX + position, y: 0, width: 1, height: 6)
 
 //                ctx.move(to: CGPoint(x: -0.5, y: 0))
 //                ctx.addLine(to: CGPoint(x: -0.5, y: 0))
