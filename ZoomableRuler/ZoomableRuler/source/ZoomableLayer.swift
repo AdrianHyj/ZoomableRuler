@@ -14,6 +14,14 @@ protocol ZoomableLayerDataSource: NSObjectProtocol {
 class ZoomableLayer: CALayer {
     weak var dataSource: ZoomableLayerDataSource?
 
+    var centerPoint: CGPoint {
+        didSet {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            setNeedsDisplay(frame)
+            CATransaction.commit()
+        }
+    }
     var unitPerPixel: CGFloat {
         didSet {
             CATransaction.begin()
@@ -31,7 +39,8 @@ class ZoomableLayer: CALayer {
         }
     }
 
-    init(withUnitPerPixel unitPerPixel: CGFloat, dataSource: ZoomableLayerDataSource, pixelPerLine: CGFloat = 1) {
+    init(withCenterPoint centerPoint: CGPoint, unitPerPixel: CGFloat, pixelPerLine: CGFloat = 1, dataSource: ZoomableLayerDataSource) {
+        self.centerPoint = centerPoint
         self.unitPerPixel = unitPerPixel
         self.pixelPerLine = pixelPerLine
         self.dataSource = dataSource
@@ -63,13 +72,14 @@ class ZoomableLayer: CALayer {
 
             let centerUnitValue = dataSource?.layerRequesetCenterUnitValue(self) ?? 0
             let lineWidth: CGFloat = 1.0
+            let offsetX = (rect.minX - centerPoint.x)/pixelPerLine - CGFloat(Int((rect.minX - centerPoint.x)/pixelPerLine))*pixelPerLine
             let numberOfLine: Int = Int(rect.width / (pixelPerLine+lineWidth))
             print(">>>>>>>>> rect :\(rect) >>>>>>>>>>")
 //            ctx.beginPath()
             for i in 0 ..< numberOfLine {
                 let position: CGFloat = CGFloat(i)*(pixelPerLine+lineWidth)
 
-                let upperLineRect = CGRect(x: -0.5 + position, y: 0, width: 1, height: 6)
+                let upperLineRect = CGRect(x: offsetX + position, y: 0, width: 1, height: 6)
 
 //                ctx.move(to: CGPoint(x: -0.5, y: 0))
 //                ctx.addLine(to: CGPoint(x: -0.5, y: 0))

@@ -46,7 +46,7 @@ class ZoomableRuler: UIControl {
         curScrollViewOffsetX = scrollView.contentOffset.x
         // layer
         unitPerPixel = scrollView.frame.size.width/(8*3600)
-        let zLayer = ZoomableLayer(withUnitPerPixel: unitPerPixel, dataSource: self, pixelPerLine: 40)
+        let zLayer = ZoomableLayer(withCenterPoint: CGPoint(x: 0, y: 0), unitPerPixel: unitPerPixel, pixelPerLine: 40, dataSource: self)
         zLayer.frame = CGRect(x: (scrollView.contentSize.width - scrollViewContentWidth)/2,
                               y: 0,
                               width: scrollViewContentWidth,
@@ -65,10 +65,10 @@ extension ZoomableRuler: UIScrollViewDelegate {
         centerUintValue = centerUintValue + xOffset/unitPerPixel
         print("centerUintValue: \(centerUintValue)")
         curScrollViewOffsetX = scrollView.contentOffset.x
-        if scrollView.contentOffset.x > zoomableLayer.frame.maxX - scrollView.frame.size.width/2 {
+        if scrollView.contentOffset.x > zoomableLayer.frame.maxX - scrollView.frame.size.width {
             CATransaction.begin()
             CATransaction.setDisableActions(true)
-            zoomableLayer.frame = CGRect(x: scrollView.contentOffset.x - scrollView.frame.size.width*2/3,
+            zoomableLayer.frame = CGRect(x: scrollView.contentOffset.x - scrollView.frame.size.width,
                                          y: 0,
                                          width: zoomableLayer.frame.width,
                                          height: zoomableLayer.frame.height)
@@ -76,7 +76,7 @@ extension ZoomableRuler: UIScrollViewDelegate {
         } else if scrollView.contentOffset.x < zoomableLayer.frame.minX + scrollView.frame.size.width/2 {
             CATransaction.begin()
             CATransaction.setDisableActions(true)
-            zoomableLayer.frame = CGRect(x: scrollView.contentOffset.x - scrollView.frame.size.width*2/3,
+            zoomableLayer.frame = CGRect(x: scrollView.contentOffset.x - scrollView.frame.size.width,
                                          y: 0,
                                          width: zoomableLayer.frame.width,
                                          height: zoomableLayer.frame.height)
