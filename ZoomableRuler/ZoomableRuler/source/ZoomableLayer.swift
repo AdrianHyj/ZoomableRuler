@@ -14,15 +14,10 @@ protocol ZoomableLayerDataSource: NSObjectProtocol {
 class ZoomableLayer: CALayer {
     weak var dataSource: ZoomableLayerDataSource?
 
-    var centerPoint: CGPoint {
-        didSet {
-            CATransaction.begin()
-            CATransaction.setDisableActions(true)
-            setNeedsDisplay(frame)
-            CATransaction.commit()
-        }
-    }
-    var unitPerPixel: CGFloat {
+    let startPoint: CGPoint
+    let centerUnitValue: CGFloat
+
+    var pixelPerUnit: CGFloat {
         didSet {
             CATransaction.begin()
             CATransaction.setDisableActions(true)
@@ -39,9 +34,10 @@ class ZoomableLayer: CALayer {
         }
     }
 
-    init(withCenterPoint centerPoint: CGPoint, unitPerPixel: CGFloat, pixelPerLine: CGFloat = 1, dataSource: ZoomableLayerDataSource) {
-        self.centerPoint = centerPoint
-        self.unitPerPixel = unitPerPixel
+    init(withStartPoint startPoint: CGPoint, centerUnitValue: CGFloat, pixelPerUnit: CGFloat, pixelPerLine: CGFloat = 1, dataSource: ZoomableLayerDataSource) {
+        self.startPoint = startPoint
+        self.centerUnitValue = centerUnitValue
+        self.pixelPerUnit = pixelPerUnit
         self.pixelPerLine = pixelPerLine
         self.dataSource = dataSource
         super.init()
@@ -70,11 +66,13 @@ class ZoomableLayer: CALayer {
             let hourTextWidth = attributeString.size().width + 5
             let hourTextHeight = attributeString.size().height
 
-            let centerUnitValue = dataSource?.layerRequesetCenterUnitValue(self) ?? 0
+//            let centerUnitValue = dataSource?.layerRequesetCenterUnitValue(self) ?? 0
             let lineWidth: CGFloat = 1.0
-            let offsetX = (rect.minX - centerPoint.x)/pixelPerLine - CGFloat(Int((rect.minX - centerPoint.x)/pixelPerLine))*pixelPerLine
-            let numberOfLine: Int = Int(rect.width / (pixelPerLine+lineWidth))
-            print(">>>>>>>>> rect :\(rect) >>>>>>>>>>")
+//            let offsetX = ((rect.minX - centerPoint.x)/pixelPerLine - CGFloat(Int((rect.minX - centerPoint.x)/pixelPerLine)))*pixelPerLine
+            let offsetX = 41 - ((rect.minX-startPoint.x) - CGFloat(Int((rect.minX-startPoint.x)/(pixelPerLine+lineWidth)))*(pixelPerLine+lineWidth)) - 0.5
+            let numberOfLine: Int = Int(ceil(rect.width / (pixelPerLine+lineWidth)))
+            print("============ \((rect.minX-startPoint.x)/(pixelPerLine+lineWidth)) - \(Int((rect.minX-startPoint.x)/(pixelPerLine+lineWidth)))")
+            print(">>>>>>>>> rect :\(rect) - \(offsetX) >>>>>>>>>>")
 //            ctx.beginPath()
             for i in 0 ..< numberOfLine {
                 let position: CGFloat = CGFloat(i)*(pixelPerLine+lineWidth)
@@ -93,7 +91,7 @@ class ZoomableLayer: CALayer {
                                       y: upperLineRect.maxY + 10,
                                       width: hourTextWidth,
                                       height: hourTextHeight)
-                let lineUnit: Int = Int(centerUnitValue+(upperLineRect.origin.x - rect.size.width/2)/unitPerPixel)
+                let lineUnit: Int = Int(centerUnitValue+(rect.minX - startPoint.x + upperLineRect.origin.x - rect.size.width/2)/pixelPerUnit)
                 let hour: Int = lineUnit%(24*3600)/3600
                 let min: Int = lineUnit%(24*3600)%3600/60
                 print("paint rect: \(upperLineRect) with hourString: \(hour) minString: \(min)")
