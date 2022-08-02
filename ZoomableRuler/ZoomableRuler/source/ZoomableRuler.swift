@@ -13,7 +13,7 @@ class ZoomableRuler: UIControl {
 
     private(set) var centerUintValue: CGFloat = 0
     private(set) var curScrollViewOffsetX: CGFloat = 0
-    private(set) var unitPerPixel: CGFloat = 0
+    private(set) var pixelPerUnit: CGFloat = 0
 
     lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -45,8 +45,12 @@ class ZoomableRuler: UIControl {
         scrollView.contentOffset = CGPoint(x: (scrollView.contentSize.width - scrollView.frame.size.width)/2, y: 0)
         curScrollViewOffsetX = scrollView.contentOffset.x
         // layer
-        unitPerPixel = scrollView.frame.size.width/(8*3600)
-        let zLayer = ZoomableLayer(withCenterPoint: CGPoint(x: 0, y: 0), unitPerPixel: unitPerPixel, pixelPerLine: 40, dataSource: self)
+        pixelPerUnit = scrollView.frame.size.width/(8*3600)
+        let zLayer = ZoomableLayer(withStartPoint: CGPoint(x: (scrollView.contentSize.width - scrollViewContentWidth)/2, y: 0),
+                                   centerUnitValue: centerUintValue,
+                                   pixelPerUnit: pixelPerUnit,
+                                   pixelPerLine: 40,
+                                   dataSource: self)
         zLayer.frame = CGRect(x: (scrollView.contentSize.width - scrollViewContentWidth)/2,
                               y: 0,
                               width: scrollViewContentWidth,
@@ -62,8 +66,8 @@ extension ZoomableRuler: UIScrollViewDelegate {
         guard let zoomableLayer = self.zoomableLayer else { return }
 
         let xOffset = scrollView.contentOffset.x - curScrollViewOffsetX
-        centerUintValue = centerUintValue + xOffset/unitPerPixel
-        print("centerUintValue: \(centerUintValue)")
+        centerUintValue = centerUintValue + xOffset/pixelPerUnit
+//        print("centerUintValue: \(centerUintValue)")
         curScrollViewOffsetX = scrollView.contentOffset.x
         if scrollView.contentOffset.x > zoomableLayer.frame.maxX - scrollView.frame.size.width {
             CATransaction.begin()
