@@ -32,7 +32,8 @@ class ViewController: UIViewController {
         let zoomableRuler = ZoomableRuler(frame: CGRect(x: 0, y: 200, width: view.frame.size.width, height: 180))
         zoomableRuler.delegate = self
         zoomableRuler.dataSource = self
-        zoomableRuler.setCenterUnitValue(1653816942.0, maxUnitValue: 1659423359.0)
+        let centerUnitValue: Float = 1659412800.0
+        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659416800.0)
         view.addSubview(zoomableRuler)
 
         let line = UIView(frame: CGRect(x: zoomableRuler.frame.size.width/2 - 0.5,
@@ -44,7 +45,7 @@ class ViewController: UIViewController {
 
         zoomableRuler.addSubview(centerTitleLabel)
         centerTitleLabel.frame = CGRect(x: line.frame.minX - 100, y: line.frame.minY - 25, width: 201, height: 20)
-        centerTitleLabel.text = formatter.string(from: Date(timeIntervalSince1970: Double(1653816942.0)))
+        centerTitleLabel.text = formatter.string(from: Date(timeIntervalSince1970: Double(centerUnitValue)))
     }
 
 }

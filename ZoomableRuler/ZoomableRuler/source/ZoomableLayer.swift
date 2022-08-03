@@ -72,10 +72,10 @@ class ZoomableLayer: CALayer {
 //            let centerUnitValue = dataSource?.layerRequesetCenterUnitValue(self) ?? 0
             let lineWidth: CGFloat = 1.0
 //            let offsetX = ((rect.minX - centerPoint.x)/pixelPerLine - CGFloat(Int((rect.minX - centerPoint.x)/pixelPerLine)))*pixelPerLine
-            let offsetX = 41 - ((rect.minX-startPoint.x) - CGFloat(Int((rect.minX-startPoint.x)/(pixelPerLine+lineWidth)))*(pixelPerLine+lineWidth)) - 0.5
-            let numberOfLine: Int = Int(ceil(rect.width / (pixelPerLine+lineWidth)))
-            print("============ \((rect.minX-startPoint.x)/(pixelPerLine+lineWidth)) - \(Int((rect.minX-startPoint.x)/(pixelPerLine+lineWidth)))")
-            print(">>>>>>>>> rect :\(rect) - \(offsetX) >>>>>>>>>>")
+            let offsetX = (pixelPerLine+lineWidth) - ((rect.minX-startPoint.x) - CGFloat(Int((rect.minX-startPoint.x)/(pixelPerLine+lineWidth)))*(pixelPerLine+lineWidth)) - 0.5
+            let numberOfLine: Int = Int(rect.width / (pixelPerLine+lineWidth))
+//            print("============ \((rect.minX-startPoint.x)/(pixelPerLine+lineWidth)) - \(Int((rect.minX-startPoint.x)/(pixelPerLine+lineWidth)))")
+//            print(">>>>>>>>> rect :\(rect) - \(offsetX) >>>>>>>>>>")
 //            ctx.beginPath()
             for i in 0 ..< numberOfLine {
                 let position: CGFloat = CGFloat(i)*(pixelPerLine+lineWidth)
@@ -94,17 +94,17 @@ class ZoomableLayer: CALayer {
                                       y: upperLineRect.maxY + 10,
                                       width: hourTextWidth,
                                       height: hourTextHeight)
-                let lineUnit: Int = Int(centerUnitValue+(rect.minX - startPoint.x + upperLineRect.origin.x - rect.size.width/2)/pixelPerUnit)
+                let lineUnit: Int = Int(centerUnitValue + 8*3600.0 + (rect.minX - startPoint.x + upperLineRect.origin.x)/pixelPerUnit)
                 let hour: Int = lineUnit%(24*3600)/3600
                 let min: Int = lineUnit%(24*3600)%3600/60
-                print("paint rect: \(upperLineRect) with hourString: \(hour) minString: \(min)")
+//                print("paint rect: \(upperLineRect) with hourString: \(hour) minString: \(min)")
                 let timeString = String(format: "%02d:%02d", hour, min)
                 let ocString = timeString as NSString
                 ocString.draw(in: textRect, withAttributes: textAttr)
             }
 //            ctx.closePath()
 //            ctx.strokePath()
-            print("<<<<<<<<<<<<<<<")
+//            print("<<<<<<<<<<<<<<<")
             if let imageToDraw = UIGraphicsGetImageFromCurrentImageContext() {
                 UIGraphicsEndImageContext()
 //                contentsRect = rect
