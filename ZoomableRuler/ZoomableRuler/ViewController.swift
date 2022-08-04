@@ -31,9 +31,8 @@ class ViewController: UIViewController {
 
         let zoomableRuler = ZoomableRuler(frame: CGRect(x: 0, y: 200, width: view.frame.size.width, height: 180))
         zoomableRuler.delegate = self
-        zoomableRuler.dataSource = self
-        let centerUnitValue: Float = 1659412800.0
-        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659416800.0)
+        let centerUnitValue: Float = 1659585600.0
+        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659609351.0)
         view.addSubview(zoomableRuler)
 
         let line = UIView(frame: CGRect(x: zoomableRuler.frame.size.width/2 - 0.5,
@@ -51,17 +50,19 @@ class ViewController: UIViewController {
 }
 
 extension ViewController: ZoomableRulerDelegate {
+    func ruler(_ ruler: ZoomableRuler, shouldShowMoreInfo block: @escaping (Bool) -> (), lessThan unitValue: CGFloat) {
+        DispatchQueue.main.async {
+            block(true)
+        }
+    }
+
+    func ruler(_ ruler: ZoomableRuler, shouldShowMoreInfo block: @escaping (Bool) -> (), moreThan unitValue: CGFloat) {
+        DispatchQueue.main.async {
+            block(true)
+        }
+    }
+
     func ruler(_ ruler: ZoomableRuler, currentCenterValue unitValue: Float) {
         centerTitleLabel.text = formatter.string(from: Date(timeIntervalSince1970: Double(unitValue)))
     }
-
-    func ruler(_ ruler: ZoomableRuler, shouldShowMore: @escaping (Bool) -> ()) {
-        DispatchQueue.main.async {
-            shouldShowMore(true)
-        }
-    }
-}
-
-extension ViewController: ZoomableRulerDataSource {
-
 }

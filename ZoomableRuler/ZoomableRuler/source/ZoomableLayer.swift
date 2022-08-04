@@ -16,7 +16,6 @@ class ZoomableLayer: CALayer {
 
     var startPoint: CGPoint
     let centerUnitValue: CGFloat
-    let maxUnitValue: CGFloat
 
     var pixelPerUnit: CGFloat {
         didSet {
@@ -35,12 +34,11 @@ class ZoomableLayer: CALayer {
         }
     }
 
-    init(withStartPoint startPoint: CGPoint, centerUnitValue: CGFloat, pixelPerUnit: CGFloat, pixelPerLine: CGFloat = 1, maxUnitValue: CGFloat, dataSource: ZoomableLayerDataSource) {
+    init(withStartPoint startPoint: CGPoint, centerUnitValue: CGFloat, pixelPerUnit: CGFloat, pixelPerLine: CGFloat = 1, dataSource: ZoomableLayerDataSource) {
         self.startPoint = startPoint
         self.centerUnitValue = centerUnitValue
         self.pixelPerUnit = pixelPerUnit
         self.pixelPerLine = pixelPerLine
-        self.maxUnitValue = maxUnitValue
         self.dataSource = dataSource
         super.init()
         self.backgroundColor = UIColor.blue.cgColor
