@@ -83,13 +83,14 @@ class ZoomableRuler: UIControl {
         }
 
         scrollView.frame = CGRect(x: 0, y: 0, width: frame.size.width, height: frame.size.height)
-        let scrollViewContentWidth = scrollView.frame.width*screenTimes
+        var scrollViewContentWidth = scrollView.frame.width*screenTimes
 
         pixelPerUnit = scrollViewContentWidth/screenUnitValue
         let maxX = (rightValue - centerUintValue)*pixelPerUnit
         let minX = (centerUintValue - leftValue)*pixelPerUnit
         // 是否一开始就小于默认滚动的范围, 如果是，则算出对应的Contentsize, 如果不是，则直接用默认的宽度(后续判断是否询问继续加载更多内容的时候需要)
-        scrollView.contentSize = CGSize(width: (maxX + minX) < scrollViewContentWidth ? (maxX + minX) : scrollViewContentWidth,
+        scrollViewContentWidth = (maxX + minX) < scrollViewContentWidth ? (maxX + minX) : scrollViewContentWidth
+        scrollView.contentSize = CGSize(width: scrollViewContentWidth,
                                         height: scrollView.frame.size.height)
         scrollView.contentInset = UIEdgeInsets(top: 0, left: scrollView.frame.width/2, bottom: 0, right: scrollView.frame.width/2)
 
@@ -116,10 +117,7 @@ extension ZoomableRuler: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         // 保证有Layer
         guard let zoomableLayer = self.zoomableLayer else { return }
-        // 如果初始化后，滚动的内容达不到倍数，layer的宽度和scrollView.contentSize一样，不用刷新
-        guard scrollView.contentSize.width >= screenTimes*scrollView.frame.size.width else {
-            return
-        }
+
         let contentOffsetX = scrollView.contentOffset.x
         let contentSizeWidth = scrollView.contentSize.width
         let contentScreenWidth = scrollView.frame.size.width
@@ -130,6 +128,11 @@ extension ZoomableRuler: UIScrollViewDelegate {
 //        print("centerUintValue: \(scrollView.contentOffset.x), \(curScrollViewOffsetX) - \(centerUintValue)")
         curScrollViewOffsetX = contentOffsetX
         delegate?.ruler(self, currentCenterValue: Float(centerUintValue))
+
+        // 如果在最大最小值都提供情况下，初始化后，滚动的内容达不到倍数，layer的宽度和scrollView.contentSize一样，不用刷新
+        if maxUnitValue != nil, minUnitValue != nil, contentSizeWidth < screenTimes*contentScreenWidth {
+            return
+        }
 
         if contentOffsetX < 0 {
             if !requestingLess {
@@ -155,7 +158,7 @@ extension ZoomableRuler: UIScrollViewDelegate {
             return
         }
 
-        if scrollView.contentOffset.x > zoomableLayer.frame.maxX - scrollView.frame.size.width*2/3 {
+        if scrollView.contentOffset.x > zoomableLayer.frame.maxX - scrollView.frame.size.width {
             var layerFrame = CGRect(x: scrollView.contentOffset.x - scrollView.frame.size.width,
                                     y: 0,
                                     width: zoomableLayer.frame.width,
@@ -203,9 +206,13 @@ extension ZoomableRuler: UIScrollViewDelegate {
         var loadMoreWidth = contentScreenWidth*screenTimes
         let oldStartPointX = zLayer.startPoint.x
         if let minValue = minUnitValue {
-            // 最小值离当前开始点的距离
-            let minXDistance = oldStartPointX - (zLayer.centerUnitValue - minValue)*pixelPerUnit
-            loadMoreWidth = loadMoreWidth > minXDistance ? minXDistance : loadMoreWidth
+            if zLayer.centerUnitValue - (oldStartPointX - zLayer.frame.minX)/pixelPerUnit <= minValue {
+                loadMoreWidth = 0
+            } else {
+                // 最小值离当前开始点的距离
+                let minXDistance = abs(oldStartPointX - (zLayer.centerUnitValue - minValue)*pixelPerUnit)
+                loadMoreWidth = loadMoreWidth > minXDistance ? minXDistance : loadMoreWidth
+            }
         }
 
         zLayer.startPoint = CGPoint(x: zLayer.startPoint.x + loadMoreWidth, y: zLayer.startPoint.y)
@@ -218,6 +225,7 @@ extension ZoomableRuler: UIScrollViewDelegate {
         self.scrollView.contentSize = CGSize(width: self.scrollView.contentSize.width + loadMoreWidth,
                                              height: self.scrollView.contentSize.height)
         self.scrollView.contentOffset = CGPoint(x: scrollViewOffsetX, y: self.scrollView.contentOffset.y)
+
         CATransaction.commit()
     }
 
@@ -230,27 +238,17 @@ extension ZoomableRuler: UIScrollViewDelegate {
         var loadMoreWidth = contentScreenWidth*screenTimes
         let oldStartPointX = zLayer.startPoint.x
         if let maxValue = maxUnitValue {
-            print("zLayer.frame.maxX - \((zLayer.frame.maxX - oldStartPointX)*pixelPerUnit + zLayer.centerUnitValue)")
-            print("oldStartPointX: \(oldStartPointX) - layer.frame: \(zLayer.frame) - offset: \(self.scrollView.contentOffset)")
-            if (zLayer.frame.maxX - zLayer.frame.size.width/2 - oldStartPointX)/pixelPerUnit + zLayer.centerUnitValue >= maxValue  {
+            if (zLayer.frame.maxX - oldStartPointX)/pixelPerUnit + zLayer.centerUnitValue >= maxValue {
                 loadMoreWidth = 0
             } else {
                 // 最大值离当前开始点的距离
-                let maxXDistance = (maxValue - zLayer.centerUnitValue)*pixelPerUnit - oldStartPointX
+                let maxXDistance = (maxValue - zLayer.centerUnitValue)*pixelPerUnit - (zLayer.frame.maxX - oldStartPointX)
                 loadMoreWidth = loadMoreWidth > maxXDistance ? maxXDistance : loadMoreWidth
             }
         }
-
-        zLayer.startPoint = CGPoint(x: zLayer.startPoint.x - loadMoreWidth, y: zLayer.startPoint.y)
-        var layerFrame = zLayer.frame
-        layerFrame.origin.x = layerFrame.minX - loadMoreWidth
-        zLayer.frame = layerFrame
-
-        let scrollViewOffsetX = self.scrollView.contentOffset.x - loadMoreWidth
-        self.curScrollViewOffsetX = scrollViewOffsetX
         self.scrollView.contentSize = CGSize(width: self.scrollView.contentSize.width + loadMoreWidth,
                                              height: self.scrollView.contentSize.height)
-        self.scrollView.contentOffset = CGPoint(x: scrollViewOffsetX, y: self.scrollView.contentOffset.y)
+        self.scrollView.contentOffset = CGPoint(x: scrollView.contentOffset.x, y: self.scrollView.contentOffset.y)
 
         CATransaction.commit()
     }
