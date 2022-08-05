@@ -27,6 +27,8 @@ class ZoomableRuler: UIControl {
     var requestingMore = false
     /// 是否还有更大的值范围等待加载
     var hasMoreValue: Bool = true
+    // 缩放时初始比例
+    var startScale: CGFloat?
 
     /// 显示在中央的数值
     private(set) var centerUintValue: CGFloat = 0
@@ -44,6 +46,9 @@ class ZoomableRuler: UIControl {
     /// 一屏内容所表达的大小
     let screenUnitValue: CGFloat = 8*3600.0
 
+    /// 缩放手势
+    var pinchGesture: UIPinchGestureRecognizer?
+
     lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.delegate = self
@@ -56,6 +61,10 @@ class ZoomableRuler: UIControl {
         super.init(frame: frame)
         addSubview(scrollView)
         scrollView.backgroundColor = .lightGray
+
+        let pichGR = UIPinchGestureRecognizer.init(target: self, action: #selector(pinchAction(recoginer:)))
+        addGestureRecognizer(pichGR)
+        pinchGesture = pichGR
     }
 
     required init?(coder: NSCoder) {
@@ -74,6 +83,36 @@ class ZoomableRuler: UIControl {
         self.centerUintValue = CGFloat(value)
         resetScrollView(withFrame: frame)
     }
+
+    @objc private func pinchAction(recoginer: UIPinchGestureRecognizer) -> Void {
+        // 每一次 recognizer.scale 都是从大概1.0的左右开始缩小或者放大
+        if recoginer.state == .began {
+            startScale = recoginer.scale
+            print("recoginer.scale - start: \(recoginer.scale)")
+        }
+        else if recoginer.state == .changed {
+            // 缩放时更新layerFrame
+            print("recoginer.scale changed: \(recoginer.scale)")
+            zoomableLayer?.pixelPerLine = 40 * (recoginer.scale)
+//            updateFrame(scale: recoginer.scale / startScale!)
+            startScale = recoginer.scale
+        }
+    }
+
+//    private func updateFrame(scale: CGFloat) -> Void {
+//        var updateRulerWidth: CGFloat = rulerLayer!.bounds.width * scale
+//        if updateRulerWidth < 3*(bounds.width + 2 * sideOffset){
+//            updateRulerWidth = 3*(bounds.width + 2 * sideOffset)
+//        }
+//
+//        if updateRulerWidth > rulerMaxWidth{
+//            updateRulerWidth = rulerMaxWidth
+//        }
+//
+//        oldRulerWidth = rulerWidth
+//        rulerWidth = updateRulerWidth
+//        setNeedsLayout()
+//    }
 
     private func resetScrollView(withFrame frame: CGRect) {
         var leftValue = CGFloat(Int(centerUintValue/screenUnitValue))*screenUnitValue
