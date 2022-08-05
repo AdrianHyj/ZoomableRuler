@@ -21,8 +21,12 @@ class ZoomableRuler: UIControl {
 
     /// 正在请求更小的值，是否还有
     var requestingLess = false
+    /// 是否还有更小的值范围等待加载
+    var hasLessValue: Bool = true
     /// 正在请求更大的值，是否还有
     var requestingMore = false
+    /// 是否还有更大的值范围等待加载
+    var hasMoreValue: Bool = true
 
     /// 显示在中央的数值
     private(set) var centerUintValue: CGFloat = 0
@@ -58,7 +62,7 @@ class ZoomableRuler: UIControl {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func setCenterUnitValue(_ value: Float, maxUnitValue: Float? = nil, minUnitValue: Float? = nil) {
+    func setCenterUnitValue(_ value: Double, maxUnitValue: Double? = nil, minUnitValue: Double? = nil) {
         self.maxUnitValue = nil
         self.minUnitValue = nil
         if let maxValue = maxUnitValue, value < maxValue {
@@ -76,10 +80,12 @@ class ZoomableRuler: UIControl {
         var rightValue: CGFloat = leftValue + screenUnitValue
 
         if let minValue = minUnitValue {
-            leftValue = leftValue < minValue ? minValue: leftValue
+            hasLessValue =  leftValue >= minValue
+            leftValue = hasLessValue ? leftValue: minValue
         }
         if let maxValue = maxUnitValue {
-            rightValue = rightValue > maxValue ? maxValue : rightValue
+            hasMoreValue = maxValue > rightValue
+            rightValue = hasMoreValue ? rightValue : maxValue
         }
 
         scrollView.frame = CGRect(x: 0, y: 0, width: frame.size.width, height: frame.size.height)
@@ -130,11 +136,12 @@ extension ZoomableRuler: UIScrollViewDelegate {
         delegate?.ruler(self, currentCenterValue: Float(centerUintValue))
 
         // 如果在最大最小值都提供情况下，初始化后，滚动的内容达不到倍数，layer的宽度和scrollView.contentSize一样，不用刷新
-        if maxUnitValue != nil, minUnitValue != nil, contentSizeWidth < screenTimes*contentScreenWidth {
+        if (!hasMoreValue && !hasLessValue) {
             return
         }
 
         if contentOffsetX < 0 {
+            guard hasLessValue else { return }
             if !requestingLess {
                 requestingLess = true
                 delegate?.ruler(self, shouldShowMoreInfo: { [weak self] should in
@@ -146,6 +153,7 @@ extension ZoomableRuler: UIScrollViewDelegate {
             }
             return
         } else if contentOffsetX > scrollView.contentSize.width - scrollView.frame.size.width {
+            guard hasMoreValue else { return }
             if !requestingMore {
                 requestingMore = true
                 delegate?.ruler(self, shouldShowMoreInfo: { [weak self] should in
@@ -158,13 +166,13 @@ extension ZoomableRuler: UIScrollViewDelegate {
             return
         }
 
-        if scrollView.contentOffset.x > zoomableLayer.frame.maxX - scrollView.frame.size.width {
-            var layerFrame = CGRect(x: scrollView.contentOffset.x - scrollView.frame.size.width,
+        if contentOffsetX > zoomableLayer.frame.maxX - contentScreenWidth {
+            var layerFrame = CGRect(x: contentOffsetX - contentScreenWidth,
                                     y: 0,
                                     width: zoomableLayer.frame.width,
                                     height: zoomableLayer.frame.height)
-            if layerFrame.maxX > scrollView.contentSize.width {
-                layerFrame.origin.x = scrollView.contentSize.width - layerFrame.size.width
+            if layerFrame.maxX > contentSizeWidth {
+                layerFrame.origin.x = contentSizeWidth - layerFrame.size.width
                 CATransaction.begin()
                 CATransaction.setDisableActions(true)
                 zoomableLayer.frame = layerFrame
@@ -175,8 +183,8 @@ extension ZoomableRuler: UIScrollViewDelegate {
                 zoomableLayer.frame = layerFrame
                 CATransaction.commit()
             }
-        } else if scrollView.contentOffset.x < zoomableLayer.frame.minX + scrollView.frame.size.width/2 {
-            var layerFrame = CGRect(x: scrollView.contentOffset.x - scrollView.frame.size.width,
+        } else if contentOffsetX < zoomableLayer.frame.minX + contentScreenWidth/2 {
+            var layerFrame = CGRect(x: contentOffsetX - contentScreenWidth,
                                     y: 0,
                                     width: zoomableLayer.frame.width,
                                     height: zoomableLayer.frame.height)
