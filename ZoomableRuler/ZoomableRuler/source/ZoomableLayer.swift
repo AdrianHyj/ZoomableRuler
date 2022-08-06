@@ -17,22 +17,8 @@ class ZoomableLayer: CALayer {
     var startPoint: CGPoint
     let centerUnitValue: CGFloat
 
-    var pixelPerUnit: CGFloat {
-        didSet {
-            CATransaction.begin()
-            CATransaction.setDisableActions(true)
-            setNeedsDisplay(frame)
-            CATransaction.commit()
-        }
-    }
-    var pixelPerLine: CGFloat {
-        didSet {
-            CATransaction.begin()
-            CATransaction.setDisableActions(true)
-            setNeedsDisplay(frame)
-            CATransaction.commit()
-        }
-    }
+    private(set) var pixelPerUnit: CGFloat
+    private(set) var pixelPerLine: CGFloat
 
     init(withStartPoint startPoint: CGPoint, centerUnitValue: CGFloat, pixelPerUnit: CGFloat, pixelPerLine: CGFloat = 1, dataSource: ZoomableLayerDataSource) {
         self.startPoint = startPoint
@@ -57,6 +43,13 @@ class ZoomableLayer: CALayer {
     override func setNeedsDisplay(_ r: CGRect) {
         // work
         drawFrame(in: r)
+    }
+
+    func update(withStartPoint startPoint: CGPoint, pixelPerUnit: CGFloat, pixelPerLine: CGFloat) {
+        self.startPoint = startPoint
+        self.pixelPerUnit = pixelPerUnit
+        self.pixelPerLine = pixelPerLine
+        setNeedsDisplay(frame)
     }
 
     private func drawFrame(in rect: CGRect) {
