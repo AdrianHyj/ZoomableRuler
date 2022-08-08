@@ -63,6 +63,7 @@ class ZoomableLayer: CALayer {
 //            let centerUnitValue = dataSource?.layerRequesetCenterUnitValue(self) ?? 0
             let lineWidth: CGFloat = 1.0
 //            let offsetX = ((rect.minX - centerPoint.x)/pixelPerLine - CGFloat(Int((rect.minX - centerPoint.x)/pixelPerLine)))*pixelPerLine
+//            print("pixelPerLine: \(pixelPerLine)")
             let offsetX = (pixelPerLine+lineWidth) - ((rect.minX-startPoint.x) - CGFloat(Int((rect.minX-startPoint.x)/(pixelPerLine+lineWidth)))*(pixelPerLine+lineWidth)) - 0.5
             let numberOfLine: Int = Int(rect.width / (pixelPerLine+lineWidth))
 //            print("============ \((rect.minX-startPoint.x)/(pixelPerLine+lineWidth)) - \(Int((rect.minX-startPoint.x)/(pixelPerLine+lineWidth)))")
@@ -79,19 +80,21 @@ class ZoomableLayer: CALayer {
 //                ctx.setLineWidth(1)
                 ctx.setFillColor(UIColor.black.cgColor)
                 ctx.fill(upperLineRect)
-                let textAttr = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 11.0),
-                                NSAttributedString.Key.foregroundColor: UIColor.white]
-                let textRect = CGRect(x: upperLineRect.origin.x - hourTextWidth/2,
-                                      y: upperLineRect.maxY + 10,
-                                      width: hourTextWidth,
-                                      height: hourTextHeight)
-                let lineUnit: Int = Int(centerUnitValue + 8*3600.0 + (rect.minX - startPoint.x + upperLineRect.origin.x)/pixelPerUnit)
-                let hour: Int = lineUnit%(24*3600)/3600
-                let min: Int = lineUnit%(24*3600)%3600/60
-//                print("paint rect: \(upperLineRect) with hourString: \(hour) minString: \(min)")
-                let timeString = String(format: "%02d:%02d", hour, min)
-                let ocString = timeString as NSString
-                ocString.draw(in: textRect, withAttributes: textAttr)
+                if i%5 == 0 {
+                    let textAttr = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 11.0),
+                                    NSAttributedString.Key.foregroundColor: UIColor.white]
+                    let textRect = CGRect(x: upperLineRect.origin.x - hourTextWidth/2,
+                                          y: upperLineRect.maxY + 10,
+                                          width: hourTextWidth,
+                                          height: hourTextHeight)
+                    let lineUnit: Int = Int(centerUnitValue + 8*3600.0 + (rect.minX - startPoint.x + upperLineRect.origin.x)/pixelPerUnit)
+                    let hour: Int = lineUnit%(24*3600)/3600
+                    let min: Int = lineUnit%(24*3600)%3600/60
+    //                print("paint rect: \(upperLineRect) with hourString: \(hour) minString: \(min)")
+                    let timeString = String(format: "%02d:%02d", hour, min)
+                    let ocString = timeString as NSString
+                    ocString.draw(in: textRect, withAttributes: textAttr)
+                }
             }
 //            ctx.closePath()
 //            ctx.strokePath()

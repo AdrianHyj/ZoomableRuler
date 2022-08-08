@@ -122,7 +122,7 @@ class ZoomableRuler: UIControl {
         let zLayer = ZoomableLayer(withStartPoint: startPoint,
                                    centerUnitValue: centerUintValue,
                                    pixelPerUnit: pixelPerUnit,
-                                   pixelPerLine: screenUnitValue*startScale/scrollViewContentWidth,
+                                   pixelPerLine: 40,
                                    dataSource: self)
         scrollView.layer.addSublayer(zLayer)
         zoomableLayer = zLayer
@@ -143,20 +143,20 @@ class ZoomableRuler: UIControl {
         pixelPerUnit = scrollViewContentWidth/screenUnitValue
         zoomableLayer?.update(withStartPoint: startPoint,
                               pixelPerUnit: pixelPerUnit,
-                              pixelPerLine: screenUnitValue*startScale/scrollViewContentWidth)
+                              pixelPerLine: 40*startScale/2)
 
         zoomableLayer?.frame = CGRect(x: startPoint.x - scrollViewContentWidth/2,
                                       y: startPoint.y,
                                       width: scrollViewContentWidth,
                                       height: scrollView.frame.size.height)
 
-        scrollView.contentOffset = CGPoint(x: scale*(scrollView.contentOffset.x + scrollView.frame.size.width/2) - scrollView.frame.size.width/2,
-                                           y: 0)
-
         scrollView.contentSize = CGSize(width: scrollViewContentWidth,
                                         height: scrollView.frame.size.height)
-        print("content changed - \(scrollView.contentSize)")
 
+        scrollView.contentOffset = CGPoint(x: scale*(scrollView.contentOffset.x + scrollView.frame.size.width/2) - scrollView.frame.size.width/2,
+                                           y: 0)
+//        scrollView.delegate?.scrollViewDidScroll!(scrollView)
+        print("content changed - \(scrollView.contentSize) - \(scrollView.contentOffset)")
         CATransaction.commit()
     }
 
@@ -198,15 +198,16 @@ extension ZoomableRuler: UIScrollViewDelegate {
         // 同步当前时间戳
         centerUintValue = zoomableLayer.centerUnitValue + (contentOffsetX + scrollView.frame.width/2 - zoomableLayer.startPoint.x)/pixelPerUnit
         delegate?.ruler(self, currentCenterValue: Float(centerUintValue))
-
+        print("aaaaaaaaaaaaa1 - \(contentOffsetX)")
         // 如果在最大最小值都提供情况下，初始化后，滚动的内容达不到倍数，layer的宽度和scrollView.contentSize一样，不用刷新
         if (!hasMoreValue && !hasLessValue) {
             return
         }
-
+        print("aaaaaaaaaaaaa2 - \(contentOffsetX)")
         if contentOffsetX < 0 {
             guard hasLessValue else { return }
             if !requestingLess {
+                print("aaaaaaaaaaaaa3 - \(contentOffsetX)")
                 requestingLess = true
                 delegate?.ruler(self, shouldShowMoreInfo: { [weak self] should in
                     self?.requestingLess = false
