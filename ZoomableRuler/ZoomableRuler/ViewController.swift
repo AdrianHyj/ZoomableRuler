@@ -49,8 +49,29 @@ class ViewController: UIViewController {
         zoomableRuler.addSubview(centerTitleLabel)
         centerTitleLabel.frame = CGRect(x: line.frame.minX - 100, y: line.frame.minY - 25, width: 201, height: 20)
         centerTitleLabel.text = formatter.string(from: Date(timeIntervalSince1970: Double(centerUnitValue)))
+
+
+        let scrollview = UIScrollView(frame: CGRect(x: 0, y: zoomableRuler.frame.maxY + 20, width: view.frame.size.width, height: 180))
+        scrollview.delegate = self
+        scrollview.backgroundColor = .lightGray
+        scrollview.contentSize = CGSize(width: 2250.5, height: 180)
+//        scrollview.contentInset = UIEdgeInsets(top: 0, left: 200, bottom: 0, right: scrollview.frame.size.width/2)
+        view.addSubview(scrollview)
     }
 
+}
+
+extension ViewController: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+
+
+        let contentOffsetX = scrollView.contentOffset.x
+        let contentSizeWidth = scrollView.contentSize.width
+        let contentScreenWidth = scrollView.frame.size.width
+
+        print("aaaaaaaaaaaaa1 - \(contentOffsetX) - \(contentSizeWidth) - \(contentScreenWidth) - \(scrollView.contentInset)")
+
+    }
 }
 
 extension ViewController: ZoomableRulerDelegate {
