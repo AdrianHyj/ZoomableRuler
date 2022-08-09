@@ -28,9 +28,9 @@ class ZoomableRuler: UIControl {
     /// 是否还有更大的值范围等待加载
     var hasMoreValue: Bool = true
     /// 缩放时初始比例
-    var startScale: CGFloat = 2
+    var startScale: CGFloat = 4
     /// 用户piching的比例
-    var pichScale: CGFloat = 1.0
+    var pinchScale: CGFloat = 1.0
 
     /// 显示在中央的数值
     private(set) var centerUintValue: CGFloat = 0
@@ -39,7 +39,7 @@ class ZoomableRuler: UIControl {
     /// Ruler最大的值
     private(set) var maxUnitValue: CGFloat?
     /// 每一个pixel对应的数值
-    private(set) var pixelPerUnit: CGFloat = 0
+    private(set) var pixelPerUnit: CGFloat = 1
 
     /// 内容基于滚动页面大小来刷新的宽度倍数，默认是3
     var screenTimes: CGFloat {
@@ -89,85 +89,82 @@ class ZoomableRuler: UIControl {
     @objc private func pinchAction(recoginer: UIPinchGestureRecognizer) -> Void {
         // 每一次 recognizer.scale 都是从大概1.0的左右开始缩小或者放大
         if recoginer.state == .began {
-            pichScale = recoginer.scale
+            pinchScale = recoginer.scale
         }
         else if recoginer.state == .changed {
             // 缩放时更新layerFrame
-            pichScale = recoginer.scale / pichScale
-//            print("pichScale: \(pichScale)")
-            if pichScale * startScale > 4 {
-                pichScale = 4/startScale
-            } else if pichScale * startScale < 1 {
-                pichScale = 1/startScale
+            pinchScale = recoginer.scale / pinchScale
+//            print("pinchScale: \(pinchScale)")
+            if pinchScale * startScale > 4 {
+                pinchScale = 4/startScale
+            } else if pinchScale * startScale < 1 {
+                pinchScale = 1/startScale
             }
-            startScale = pichScale * startScale
+            startScale = pinchScale * startScale
 //            print("scorllview scale: \(startScale)")
             setNeedsLayout()
         }
     }
-
+//
     private func resetScrollView(withFrame frame: CGRect) {
         let contentInsetLeft = CGFloat(ceil(Double(frame.size.width/2)))
         scrollView.contentInset = UIEdgeInsets(top: 0, left: contentInsetLeft, bottom: 0, right: contentInsetLeft)
         scrollView.frame = CGRect(x: 0, y: 0, width: frame.size.width, height: frame.size.height)
-
-        let (startPoint, scrollViewContentWidth) = startPointAndWidth(withCenterUintValue: centerUintValue)
-
-        scrollView.contentSize = CGSize(width: scrollViewContentWidth,
-                                        height: scrollView.frame.size.height)
-        scrollView.contentOffset = CGPoint(x: startPoint.x - scrollView.frame.size.width/2, y: 0)
-
-        pixelPerUnit = scrollViewContentWidth/screenUnitValue
         // layer
-        let zLayer = ZoomableLayer(withStartPoint: startPoint,
+        let zLayer = ZoomableLayer(withStartPoint: CGPoint(x: 0, y: 0),
                                    centerUnitValue: centerUintValue,
                                    pixelPerUnit: pixelPerUnit,
                                    pixelPerLine: 40,
                                    dataSource: self)
         scrollView.layer.addSublayer(zLayer)
         zoomableLayer = zLayer
-
+        // layout subview
         setNeedsLayout()
     }
 
     override func layoutSubviews() {
         super.layoutSubviews()
+        guard let zLayer = zoomableLayer else {
+            return
+        }
+
+        let (startPoint, scrollViewContentWidth) = startPointAndWidth(withCenterUintValue: centerUintValue)
+
+//        scrollView.contentSize = CGSize(width: scrollViewContentWidth,
+//                                        height: scrollView.frame.size.height)
+//        scrollView.contentOffset = CGPoint(x: startPoint.x - scrollView.frame.size.width/2, y: 0)
+//        pixelPerUnit = scrollViewContentWidth/screenUnitValue
 
 //        let scrollViewContentWidth = scrollView.frame.width*screenTimes
-//        let scale = scrollViewContentWidth/scrollView.contentSize.width
-        let scrollViewContentWidth = scrollView.contentSize.width*pichScale
-        let startPoint = CGPoint(x: pichScale*(zoomableLayer?.startPoint.x ?? 0), y: 0)
+        let scale = (scrollView.contentSize.width == 0) ? 1 : scrollViewContentWidth/scrollView.contentSize.width
+//        let scrollViewContentWidth = scrollView.contentSize.width*pinchScale
+//        let startPoint = CGPoint(x: pinchScale*(zoomableLayer?.startPoint.x ?? 0), y: 0)
 
         CATransaction.begin()
         CATransaction.setDisableActions(true)
 
-        pixelPerUnit = scrollViewContentWidth/screenUnitValue
+        let layerStartX = (zLayer.centerUnitValue == centerUintValue) ? startPoint.x : (zLayer.startPoint.x * scale)
+        zLayer.update(withStartPoint: CGPoint(x: layerStartX, y: 0),
+                      pixelPerUnit: pixelPerUnit,
+                      pixelPerLine: 40*startScale/2)
 
-        if let zLayer = zoomableLayer {
-            zLayer.update(withStartPoint: startPoint,
-                                  pixelPerUnit: pixelPerUnit,
-                                  pixelPerLine: 40*startScale/2)
+//        let layerX = (zLayer.frame.minX + (zLayer.frame.maxX - zLayer.frame.minX)/2)*pinchScale - zLayer.frame.size.width*pinchScale/2
+//        if zLayer.frame.minX <= 0 {
+//            layerX = 0
+//        } else if zLayer.frame.maxX >= scrollView.contentSize.width {
+//            layerX = scrollView.contentSize.width - scrollViewContentWidth
+//        }
+        zLayer.frame = CGRect(x: zLayer.frame.minX*scale,
+                              y: startPoint.y,
+                              width: scrollViewContentWidth,
+                              height: scrollView.frame.size.height)
+//        print("content changed - \(scrollView.contentSize) - \(scrollView.contentOffset) - \(String(describing: zoomableLayer?.frame))")
 
-            let layerX = (zLayer.frame.minX + (zLayer.frame.maxX - zLayer.frame.minX)/2)*pichScale - zLayer.frame.size.width*pichScale/2
-//            if zLayer.frame.minX <= 0 {
-//                layerX = 0
-//            } else if zLayer.frame.maxX >= scrollView.contentSize.width {
-//                layerX = scrollView.contentSize.width - scrollViewContentWidth
-//            }
-            zLayer.frame = CGRect(x: layerX,
-                                  y: startPoint.y,
-                                  width: zLayer.frame.size.width*pichScale,
-                                  height: scrollView.frame.size.height)
-        }
+        CATransaction.commit()
 
         scrollView.contentSize = CGSize(width: scrollViewContentWidth,
                                         height: scrollView.frame.size.height)
-
-        scrollView.contentOffset = CGPoint(x: pichScale*(scrollView.contentOffset.x + scrollView.frame.size.width/2) - scrollView.frame.size.width/2,
-                                           y: 0)
-//        scrollView.delegate?.scrollViewDidScroll!(scrollView)
-        print("content changed - \(scrollView.contentSize) - \(scrollView.contentOffset) - \(String(describing: zoomableLayer?.frame))")
-        CATransaction.commit()
+        scrollView.contentOffset = CGPoint(x: startPoint.x - scrollView.frame.size.width/2, y: 0)
     }
 
     /// 计算起始坐标
@@ -183,15 +180,15 @@ class ZoomableRuler: UIControl {
             hasMoreValue = maxValue > rightValue
             rightValue = hasMoreValue ? rightValue : maxValue
         }
-        var scrollViewContentWidth = scrollView.frame.width*screenTimes
+        var scrollViewContentWidth = scrollView.frame.size.width*screenTimes
 
         pixelPerUnit = scrollViewContentWidth/screenUnitValue
-        let maxX = (rightValue - centerUintValue)*pixelPerUnit
-        let minX = (centerUintValue - leftValue)*pixelPerUnit
+        let maxX = (rightValue - uintValue)*pixelPerUnit
+        let minX = (uintValue - leftValue)*pixelPerUnit
         // 是否一开始就小于默认滚动的范围, 如果是，则算出对应的Contentsize, 如果不是，则直接用默认的宽度(后续判断是否询问继续加载更多内容的时候需要)
         scrollViewContentWidth = (maxX + minX) < scrollViewContentWidth ? (maxX + minX) : scrollViewContentWidth
 
-        return (CGPoint(x: (centerUintValue - leftValue)*pixelPerUnit, y: 0), scrollViewContentWidth)
+        return (CGPoint(x: (uintValue - leftValue)*pixelPerUnit, y: 0), scrollViewContentWidth)
     }
 }
 
@@ -208,7 +205,7 @@ extension ZoomableRuler: UIScrollViewDelegate {
         // 同步当前时间戳
         centerUintValue = zoomableLayer.centerUnitValue + (contentOffsetX + contentScreenWidth/2 - zoomableLayer.startPoint.x)/pixelPerUnit
         delegate?.ruler(self, currentCenterValue: Float(centerUintValue))
-        print("aaaaaaaaaaaaa1 - \(contentOffsetX) - \(contentSizeWidth) - \(contentScreenWidth) - \(scrollView.contentInset.left) - start point: \(zoomableLayer.startPoint), frame: \(zoomableLayer.frame) - pixelPerUint: \(pixelPerUnit)")
+//        print("aaaaaaaaaaaaa1 - \(contentOffsetX) - \(contentSizeWidth) - \(contentScreenWidth) - \(scrollView.contentInset.left) - start point: \(zoomableLayer.startPoint), frame: \(zoomableLayer.frame) - pixelPerUint: \(pixelPerUnit)")
         // 如果在最大最小值都提供情况下，初始化后，滚动的内容达不到倍数，layer的宽度和scrollView.contentSize一样，不用刷新
         if (!hasMoreValue && !hasLessValue) {
             return
@@ -283,7 +280,6 @@ extension ZoomableRuler: UIScrollViewDelegate {
         CATransaction.setDisableActions(true)
 
         let contentScreenWidth = scrollView.frame.size.width
-
         var loadMoreWidth = contentScreenWidth*screenTimes
         let oldStartPointX = zLayer.startPoint.x
         if let minValue = minUnitValue {
@@ -298,11 +294,11 @@ extension ZoomableRuler: UIScrollViewDelegate {
 
         zLayer.startPoint = CGPoint(x: zLayer.startPoint.x + loadMoreWidth, y: zLayer.startPoint.y)
         var layerFrame = zLayer.frame
-        layerFrame.origin.x = layerFrame.minX - loadMoreWidth
+        layerFrame.origin.x = layerFrame.minX + loadMoreWidth
         zLayer.setNeedsDisplay(layerFrame)
 
         let scrollViewOffsetX = self.scrollView.contentOffset.x + loadMoreWidth
-        print("ssss - \(scrollViewOffsetX)")
+//        print("ssss - \(scrollViewOffsetX)")
         self.scrollView.contentSize = CGSize(width: self.scrollView.contentSize.width + loadMoreWidth,
                                              height: self.scrollView.contentSize.height)
         self.scrollView.contentOffset = CGPoint(x: scrollViewOffsetX, y: self.scrollView.contentOffset.y)
