@@ -32,13 +32,12 @@ class ViewController: UIViewController {
         let zoomableRuler = ZoomableRuler(frame: CGRect(x: 0, y: 200, width: view.frame.size.width, height: 180))
         zoomableRuler.delegate = self
         let centerUnitValue: Double = 1659585600.0
-        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659609351.0, minUnitValue: 1659568109.0)
+        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659609351.0, minUnitValue: 1659561849.0)
+//        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659592800.0, minUnitValue: 1659578400.0)
+//        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659609351.0, minUnitValue: 1659578400.0)
+//        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659592800.0, minUnitValue: 1659561849.0)
         view.addSubview(zoomableRuler)
-//        1659561849.0 - 1659585600.0 - 1659609351.0
-//        1659578400.0 - 1659585600.0 - 1659592800.0
 
-//        1659578400.0 - 1659585600.0 - 1659609351.0
-//        1659561849.0 - 1659585600.0 - 1659592800.0
         let line = UIView(frame: CGRect(x: zoomableRuler.frame.size.width/2 - 0.5,
                                         y: 0,
                                         width: 1,
