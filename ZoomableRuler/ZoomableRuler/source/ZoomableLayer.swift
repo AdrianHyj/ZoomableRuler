@@ -7,25 +7,26 @@
 
 import UIKit
 
-protocol ZoomableLayerDataSource: NSObjectProtocol {
-    func layerRequesetCenterUnitValue(_ layer: ZoomableLayer) -> CGFloat
-}
-
 class ZoomableLayer: CALayer {
-    weak var dataSource: ZoomableLayerDataSource?
-
+    /// 初始化时确定不变的第一个居中的值，所处于的坐标，后期会根据layer的frame的变化而做出对应的改变
     var startPoint: CGPoint
+    /// 初始化时确定不变的第一个居中的值，用于判断划线，具体数值的显示
     let centerUnitValue: CGFloat
+    /// 一屏内容所表达的大小
+    let screenUnitValue: CGFloat
+    /// 标尺线的宽度
+    let lineWidth: CGFloat
 
     private(set) var pixelPerUnit: CGFloat
     private(set) var pixelPerLine: CGFloat
 
-    init(withStartPoint startPoint: CGPoint, centerUnitValue: CGFloat, pixelPerUnit: CGFloat, pixelPerLine: CGFloat = 1, dataSource: ZoomableLayerDataSource) {
+    init(withStartPoint startPoint: CGPoint, screenUnitValue: CGFloat, centerUnitValue: CGFloat, pixelPerUnit: CGFloat, pixelPerLine: CGFloat = 1, lineWidth: CGFloat) {
         self.startPoint = startPoint
         self.centerUnitValue = centerUnitValue
+        self.screenUnitValue = screenUnitValue
         self.pixelPerUnit = pixelPerUnit
         self.pixelPerLine = pixelPerLine
-        self.dataSource = dataSource
+        self.lineWidth = lineWidth
         super.init()
         self.backgroundColor = UIColor.blue.cgColor
     }
@@ -52,6 +53,12 @@ class ZoomableLayer: CALayer {
         setNeedsDisplay(frame)
     }
 
+    private func curEdgePoint() -> CGPoint {
+        let leftValue = CGFloat(Int(self.centerUnitValue/screenUnitValue))*screenUnitValue
+        let valuePixel = (self.centerUnitValue - leftValue)*pixelPerUnit
+        return CGPoint(x: startPoint.x - valuePixel, y: 0)
+    }
+
     private func drawFrame(in rect: CGRect) {
         UIGraphicsBeginImageContextWithOptions(rect.size, false, UIScreen.main.scale)
         if let ctx = UIGraphicsGetCurrentContext() {
@@ -59,49 +66,42 @@ class ZoomableLayer: CALayer {
             let attributeString = NSAttributedString.init(string: "00:00", attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 11)])
             let hourTextWidth = attributeString.size().width + 5
             let hourTextHeight = attributeString.size().height
+            // 现在的edgepoint
+            let edgePoint = curEdgePoint()
 
-//            let centerUnitValue = dataSource?.layerRequesetCenterUnitValue(self) ?? 0
-            let lineWidth: CGFloat = 1.0
-//            let offsetX = ((rect.minX - centerPoint.x)/pixelPerLine - CGFloat(Int((rect.minX - centerPoint.x)/pixelPerLine)))*pixelPerLine
-//            print("pixelPerLine: \(pixelPerLine)")
-            let offsetX = (pixelPerLine+lineWidth) - ((rect.minX-startPoint.x) - CGFloat(Int((rect.minX-startPoint.x)/(pixelPerLine+lineWidth)))*(pixelPerLine+lineWidth)) - 0.5
-            let numberOfLine: Int = Int(rect.width / (pixelPerLine+lineWidth))
-//            print("============ \((rect.minX-startPoint.x)/(pixelPerLine+lineWidth)) - \(Int((rect.minX-startPoint.x)/(pixelPerLine+lineWidth)))")
-//            print(">>>>>>>>> rect :\(rect) - \(offsetX) >>>>>>>>>>")
-//            ctx.beginPath()
+            let unitWidth = lineWidth + pixelPerLine
+            // 前面没有显示的格子的整数
+            let preUnitCount = Int((rect.minX-edgePoint.x)/unitWidth)
+            // 第一个格子的起点
+            let offsetX = -((rect.minX-edgePoint.x) - CGFloat(preUnitCount)*unitWidth) - lineWidth/2
+            let numberOfLine: Int = Int(rect.width / (unitWidth))
+
             for i in 0 ..< numberOfLine {
-                let position: CGFloat = CGFloat(i)*(pixelPerLine+lineWidth)
-
-                let upperLineRect = CGRect(x: offsetX + position, y: 0, width: 1, height: 6)
-
-//                ctx.move(to: CGPoint(x: -0.5, y: 0))
-//                ctx.addLine(to: CGPoint(x: -0.5, y: 0))
-//                ctx.addLine(to: CGPoint(x: -0.5, y: 6))
-//                ctx.setLineWidth(1)
-                ctx.setFillColor(UIColor.black.cgColor)
+                let position: CGFloat = CGFloat(i)*unitWidth
+                // 评断是长线还是短线, 12个格子一条长线，每个格子都是短线
+                // 第11条是短线，第12条是长线
+                let isLongLine = (preUnitCount+i)%12 == 0
+                let upperLineRect = CGRect(x: offsetX + position, y: 0, width: 1, height: isLongLine ? 12 : 6)
+                ctx.setFillColor(UIColor.white.cgColor)
                 ctx.fill(upperLineRect)
-                if i%5 == 0 {
+
+                if isLongLine {
                     let textAttr = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 11.0),
                                     NSAttributedString.Key.foregroundColor: UIColor.white]
                     let textRect = CGRect(x: upperLineRect.origin.x - hourTextWidth/2,
                                           y: upperLineRect.maxY + 10,
                                           width: hourTextWidth,
                                           height: hourTextHeight)
-                    let lineUnit: Int = Int(centerUnitValue + 8*3600.0 + (rect.minX - startPoint.x + upperLineRect.origin.x)/pixelPerUnit)
+                    let lineUnit: Int = Int(centerUnitValue + 8*3600.0 + (rect.minX - startPoint.x + upperLineRect.origin.x + lineWidth/2)/pixelPerUnit)
                     let hour: Int = lineUnit%(24*3600)/3600
                     let min: Int = lineUnit%(24*3600)%3600/60
-    //                print("paint rect: \(upperLineRect) with hourString: \(hour) minString: \(min)")
                     let timeString = String(format: "%02d:%02d", hour, min)
                     let ocString = timeString as NSString
                     ocString.draw(in: textRect, withAttributes: textAttr)
                 }
             }
-//            ctx.closePath()
-//            ctx.strokePath()
-//            print("<<<<<<<<<<<<<<<")
             if let imageToDraw = UIGraphicsGetImageFromCurrentImageContext() {
                 UIGraphicsEndImageContext()
-//                contentsRect = rect
                 contents = imageToDraw.cgImage
             } else {
                 UIGraphicsEndImageContext()

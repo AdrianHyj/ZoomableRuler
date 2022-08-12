@@ -23,6 +23,9 @@ class ViewController: UIViewController {
         return fm
     }()
 
+    var scrollview: UIScrollView?
+    var ruler: ZoomableRuler?
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -36,7 +39,11 @@ class ViewController: UIViewController {
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659592800.0, minUnitValue: 1659578400.0)
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659609351.0, minUnitValue: 1659578400.0)
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659592800.0, minUnitValue: 1659561849.0)
+
+//        let centerUnitValue: Double = 1660276800.0
+//        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1660298767.0, minUnitValue: 1657620367.0)
         view.addSubview(zoomableRuler)
+        ruler = zoomableRuler
 
         let line = UIView(frame: CGRect(x: zoomableRuler.frame.size.width/2 - 0.5,
                                         y: 0,
@@ -56,6 +63,21 @@ class ViewController: UIViewController {
         scrollview.contentSize = CGSize(width: 2250.5, height: 180)
 //        scrollview.contentInset = UIEdgeInsets(top: 0, left: 200, bottom: 0, right: scrollview.frame.size.width/2)
         view.addSubview(scrollview)
+        self.scrollview = scrollview
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+//            self.ruler?.scrollView.contentOffset = CGPoint(x: 0, y: 0)
+//            UIView.animate(withDuration: 15) {
+//                self.ruler?.scrollView.contentOffset = CGPoint(x: (self.ruler?.scrollView.contentSize.width ?? 0) - (self.ruler?.scrollView.frame.size.width ?? 0), y: 0)
+//            } completion: { _ in
+//                //
+//            }
+//        }
+
     }
 
 }
@@ -86,7 +108,7 @@ extension ViewController: ZoomableRulerDelegate {
         }
     }
 
-    func ruler(_ ruler: ZoomableRuler, currentCenterValue unitValue: Float) {
+    func ruler(_ ruler: ZoomableRuler, currentCenterValue unitValue: Double) {
         centerTitleLabel.text = formatter.string(from: Date(timeIntervalSince1970: Double(unitValue)))
     }
 }
