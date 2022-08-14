@@ -38,9 +38,9 @@ class ZoomableRuler: UIControl {
 
     /// 屏幕上每一个px对应的值范围
     /// 通过宽度是375的屏幕乘以3/8小时取整算出来的 375*3/(8*3600) 约等于0.04, 也就是1s是0.04宽，1个宽度是25s
-    let unitPerPixel: CGFloat = 25
+//    let unitPerPixel: CGFloat = 25
     /// 一屏内容所表达的大小
-    let screenUnitValue: CGFloat = 8*3600.0
+    let screenUnitValue: CGFloat = 1*3600.0
 
     /// 显示在中央的数值
     private(set) var centerUintValue: CGFloat = 0
@@ -103,8 +103,8 @@ class ZoomableRuler: UIControl {
         else if recoginer.state == .changed {
             // 缩放时更新layerFrame
             pinchScale = recoginer.scale / pinchScale
-            if pinchScale * startScale > 16 {
-                pinchScale = 16/startScale
+            if pinchScale * startScale > 10 {
+                pinchScale = 10/startScale
             } else if pinchScale * startScale < 1 {
                 pinchScale = 1/startScale
             }
@@ -133,6 +133,7 @@ class ZoomableRuler: UIControl {
                                    pixelPerUnit: pixelPerUnit,
                                    pixelPerLine: pixelPerLine-lineWidth,
                                    lineWidth: lineWidth)
+        zLayer.totalWidth = scrollViewContentWidth
         zLayer.frame = CGRect(x: 0,
                               y: startPoint.y,
                               width: scrollViewContentWidth,
@@ -157,16 +158,7 @@ class ZoomableRuler: UIControl {
 
         let _ = defaultWidthByUpdatePixelPerUnit()
 
-//        var dynamicScale = startScale
-//        if startScale > 2 {
-//            dynamicScale = startScale/2
-//        } else if startScale > 4 {
-//            dynamicScale = startScale/4
-//        } else if startScale > 8 {
-//            dynamicScale = startScale/8
-//        } else if startScale >= 16 {
-//            dynamicScale = startScale/16
-//        }
+        zLayer.totalWidth = scrollView.contentSize.width*scale
 
         zLayer.update(withStartPoint: CGPoint(x: zLayer.startPoint.x * scale, y: 0),
                       pixelPerUnit: pixelPerUnit,
@@ -182,7 +174,7 @@ class ZoomableRuler: UIControl {
         scrollView.contentOffset = CGPoint(x: (scrollView.contentOffset.x + offset)*scale - offset,
                                                y: scrollView.contentOffset.y)
 
-        scrollView.contentSize = CGSize(width: scrollView.contentSize.width*scale,
+        scrollView.contentSize = CGSize(width: zLayer.totalWidth,
                                         height: scrollView.contentSize.height)
 
         preScale = startScale
@@ -193,8 +185,10 @@ class ZoomableRuler: UIControl {
     /// 获取新一页，新一个时间段的宽度，顺便更新pixelPerUnit
     /// - Returns: 新一个时间段的宽度
     private func defaultWidthByUpdatePixelPerUnit() -> CGFloat {
-        let scrollViewContentWidth = screenUnitValue*startScale/25
+//        let scrollViewContentWidth = screenUnitValue*startScale/25
+        let scrollViewContentWidth = scrollView.frame.size.width*3*startScale
         pixelPerUnit = scrollViewContentWidth/screenUnitValue
+//        print("pixelPerUnit: \(pixelPerUnit)")
         return scrollViewContentWidth
     }
 
@@ -323,12 +317,13 @@ extension ZoomableRuler: UIScrollViewDelegate {
         }
 
         zLayer.startPoint = CGPoint(x: zLayer.startPoint.x + loadMoreWidth, y: zLayer.startPoint.y)
+        zLayer.totalWidth = self.scrollView.contentSize.width + loadMoreWidth
         let layerFrame = zLayer.frame
 //        layerFrame.origin.x = layerFrame.minX + loadMoreWidth
         zLayer.setNeedsDisplay(layerFrame)
 
         let scrollViewOffsetX = self.scrollView.contentOffset.x + loadMoreWidth
-        self.scrollView.contentSize = CGSize(width: self.scrollView.contentSize.width + loadMoreWidth,
+        self.scrollView.contentSize = CGSize(width: zLayer.totalWidth,
                                              height: self.scrollView.contentSize.height)
         self.scrollView.contentOffset = CGPoint(x: scrollViewOffsetX, y: self.scrollView.contentOffset.y)
 
@@ -351,7 +346,8 @@ extension ZoomableRuler: UIScrollViewDelegate {
                 loadMoreWidth = loadMoreWidth > maxXDistance ? maxXDistance : loadMoreWidth
             }
         }
-        self.scrollView.contentSize = CGSize(width: self.scrollView.contentSize.width + loadMoreWidth,
+        zLayer.totalWidth = self.scrollView.contentSize.width + loadMoreWidth
+        self.scrollView.contentSize = CGSize(width: zLayer.totalWidth,
                                              height: self.scrollView.contentSize.height)
 
         CATransaction.commit()
