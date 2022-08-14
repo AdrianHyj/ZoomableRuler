@@ -18,6 +18,8 @@ class ZoomableLayer: CALayer {
     let lineWidth: CGFloat
     /// 总的宽度
     var totalWidth: CGFloat = 0
+    
+    var scale: CGFloat = 1
 
 
     private(set) var pixelPerUnit: CGFloat
@@ -70,15 +72,14 @@ class ZoomableLayer: CALayer {
             let startUnit = centerUnitValue - startPoint.x/pixelPerUnit
             let endUnit = centerUnitValue + (totalWidth - startPoint.x)/pixelPerUnit
 
-            var pixelsPerLine: CGFloat = 60/5
-            if rect.size.width >= UIScreen.main.bounds.width*10 {
-                pixelsPerLine = pixelsPerLine/10
-            } else if rect.size.width >= UIScreen.main.bounds.width*5 {
-                pixelsPerLine = pixelsPerLine/5
+            var pixelsPerLine: CGFloat = 5*60
+            if scale >= 120 {
+                pixelsPerLine = pixelsPerLine/120
+            } else if scale >= 60 {
+                pixelsPerLine = pixelsPerLine/60
             }
             // 计算有多少个标记
             let numberOfLine: CGFloat = (endUnit - startUnit) / pixelsPerLine
-            print("pixelsPerLine: \(pixelsPerLine) - numberOfLine: \(numberOfLine)")
             let unitWidth: CGFloat = totalWidth / numberOfLine
             
             // text part

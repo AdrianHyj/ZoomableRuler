@@ -40,7 +40,7 @@ class ZoomableRuler: UIControl {
     /// 通过宽度是375的屏幕乘以3/8小时取整算出来的 375*3/(8*3600) 约等于0.04, 也就是1s是0.04宽，1个宽度是25s
 //    let unitPerPixel: CGFloat = 25
     /// 一屏内容所表达的大小
-    let screenUnitValue: CGFloat = 1*3600.0
+    let screenUnitValue: CGFloat = 3*3600.0
 
     /// 显示在中央的数值
     private(set) var centerUintValue: CGFloat = 0
@@ -103,8 +103,8 @@ class ZoomableRuler: UIControl {
         else if recoginer.state == .changed {
             // 缩放时更新layerFrame
             pinchScale = recoginer.scale / pinchScale
-            if pinchScale * startScale > 10 {
-                pinchScale = 10/startScale
+            if pinchScale * startScale > 120 {
+                pinchScale = 120/startScale
             } else if pinchScale * startScale < 1 {
                 pinchScale = 1/startScale
             }
@@ -134,6 +134,7 @@ class ZoomableRuler: UIControl {
                                    pixelPerLine: pixelPerLine-lineWidth,
                                    lineWidth: lineWidth)
         zLayer.totalWidth = scrollViewContentWidth
+        zLayer.scale = startScale
         zLayer.frame = CGRect(x: 0,
                               y: startPoint.y,
                               width: scrollViewContentWidth,
@@ -159,18 +160,24 @@ class ZoomableRuler: UIControl {
         let _ = defaultWidthByUpdatePixelPerUnit()
 
         zLayer.totalWidth = scrollView.contentSize.width*scale
+        zLayer.scale = startScale
 
         zLayer.update(withStartPoint: CGPoint(x: zLayer.startPoint.x * scale, y: 0),
                       pixelPerUnit: pixelPerUnit,
                       pixelPerLine: (pixelPerLine - lineWidth)*startScale)
 
-        zLayer.frame = CGRect(x: zLayer.frame.minX*scale,
-                              y: zLayer.frame.origin.y,
-                              width: zLayer.frame.size.width*scale,
-                              height: zLayer.frame.size.height)
-
-
         let offset = scrollView.frame.size.width - scrollView.contentInset.left
+        var layerFrame = CGRect(x: (scrollView.contentOffset.x + offset)*scale - offset - zLayer.frame.size.width/2,
+                                y: zLayer.frame.origin.y,
+                                width: zLayer.frame.size.width,
+                                height: zLayer.frame.size.height)
+        if layerFrame.maxX > zLayer.totalWidth {
+            layerFrame.origin.x = zLayer.totalWidth - zLayer.frame.size.width
+        } else if layerFrame.minX < 0 {
+            layerFrame.origin.x = 0
+        }
+        zLayer.frame = layerFrame
+
         scrollView.contentOffset = CGPoint(x: (scrollView.contentOffset.x + offset)*scale - offset,
                                                y: scrollView.contentOffset.y)
 
