@@ -23,14 +23,12 @@ class ZoomableLayer: CALayer {
 
 
     private(set) var pixelPerUnit: CGFloat
-    private(set) var pixelPerLine: CGFloat
 
-    init(withStartPoint startPoint: CGPoint, screenUnitValue: CGFloat, centerUnitValue: CGFloat, pixelPerUnit: CGFloat, pixelPerLine: CGFloat = 1, lineWidth: CGFloat) {
+    init(withStartPoint startPoint: CGPoint, screenUnitValue: CGFloat, centerUnitValue: CGFloat, pixelPerUnit: CGFloat, lineWidth: CGFloat) {
         self.startPoint = startPoint
         self.centerUnitValue = centerUnitValue
         self.screenUnitValue = screenUnitValue
         self.pixelPerUnit = pixelPerUnit
-        self.pixelPerLine = pixelPerLine
         self.lineWidth = lineWidth
         super.init()
         self.backgroundColor = UIColor.blue.cgColor
@@ -51,10 +49,9 @@ class ZoomableLayer: CALayer {
         drawFrame(in: r)
     }
 
-    func update(withStartPoint startPoint: CGPoint, pixelPerUnit: CGFloat, pixelPerLine: CGFloat) {
+    func update(withStartPoint startPoint: CGPoint, pixelPerUnit: CGFloat) {
         self.startPoint = startPoint
         self.pixelPerUnit = pixelPerUnit
-        self.pixelPerLine = pixelPerLine
         setNeedsDisplay(frame)
     }
 
@@ -72,29 +69,28 @@ class ZoomableLayer: CALayer {
             let startUnit = centerUnitValue - startPoint.x/pixelPerUnit
             let endUnit = centerUnitValue + (totalWidth - startPoint.x)/pixelPerUnit
 
-            var pixelsPerLine: CGFloat = 5*60
-            if scale >= 120 {
-                pixelsPerLine = pixelsPerLine/120
-            } else if scale >= 60 {
-                pixelsPerLine = pixelsPerLine/60
+            // 一格60s。如果按照屏宽375来算的话，默认三屏 screenUnitValue/(3*375)得出1屏多少pixel
+            var pixelsPerLine: CGFloat = 60
+            if scale >= 12*5 {
+                pixelsPerLine = pixelsPerLine/12/5
+            } else if scale >= 12 {
+                pixelsPerLine = pixelsPerLine/12
             }
             // 计算有多少个标记
             let numberOfLine: CGFloat = (endUnit - startUnit) / pixelsPerLine
             let unitWidth: CGFloat = totalWidth / numberOfLine
             
             // text part
-            let attributeString = NSAttributedString.init(string: "00:00", attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 11)])
+            let attributeString = NSAttributedString.init(string: "00:00:00", attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 11)])
             let hourTextWidth = attributeString.size().width + 5
             let hourTextHeight = attributeString.size().height
             // 现在的edgepoint
             let edgePoint = curEdgePoint()
 
-//            let unitWidth = lineWidth + pixelPerLine
-//            // 前面没有显示的格子的整数
+            // 前面没有显示的格子的整数
             let preUnitCount = Int((rect.minX-edgePoint.x)/unitWidth)
-//            // 第一个格子的起点
+            // 第一个格子的起点
             let offsetX = -((rect.minX-edgePoint.x) - CGFloat(preUnitCount)*unitWidth) - lineWidth/2
-//            let numberOfLine: Int = Int(rect.width / (unitWidth))
 
             for i in 0 ..< Int(numberOfLine) {
                 let position: CGFloat = CGFloat(i)*unitWidth
@@ -105,7 +101,7 @@ class ZoomableLayer: CALayer {
                 // 评断是长线还是短线, 12个格子一条长线，每个格子都是短线
                 // 第11条是短线，第12条是长线
                 let isLongLine = (preUnitCount+i)%12 == 0
-                let upperLineRect = CGRect(x: offsetX + position - lineWidth/2, y: 0, width: 1, height: isLongLine ? 12 : 6)
+                let upperLineRect = CGRect(x: offsetX + position - lineWidth/2, y: 0, width: 1, height: isLongLine ? 10 : 6)
                 ctx.setFillColor(UIColor.white.cgColor)
                 ctx.fill(upperLineRect)
 
@@ -119,7 +115,8 @@ class ZoomableLayer: CALayer {
                     let lineUnit: Int = Int(centerUnitValue + 8*3600.0 + (rect.minX + lineWidth/2 - startPoint.x + upperLineRect.origin.x + lineWidth/2)/pixelPerUnit)
                     let hour: Int = lineUnit%(24*3600)/3600
                     let min: Int = lineUnit%(24*3600)%3600/60
-                    let timeString = String(format: "%02d:%02d", hour, min)
+                    let sec: Int = lineUnit%(24*3600)%3600%60
+                    let timeString = String(format: "%02d:%02d:%02d", hour, min, sec)
                     let ocString = timeString as NSString
                     ocString.draw(in: textRect, withAttributes: textAttr)
                 }

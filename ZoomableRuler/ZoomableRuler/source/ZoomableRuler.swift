@@ -36,9 +36,6 @@ class ZoomableRuler: UIControl {
     /// 是否在pinch来调整比例
     var pinching: Bool = false
 
-    /// 屏幕上每一个px对应的值范围
-    /// 通过宽度是375的屏幕乘以3/8小时取整算出来的 375*3/(8*3600) 约等于0.04, 也就是1s是0.04宽，1个宽度是25s
-//    let unitPerPixel: CGFloat = 25
     /// 一屏内容所表达的大小
     let screenUnitValue: CGFloat = 3*3600.0
 
@@ -51,8 +48,6 @@ class ZoomableRuler: UIControl {
     /// 每一个pixel对应的数值
     private(set) var pixelPerUnit: CGFloat = 1
 
-    /// 12px一条线
-    let pixelPerLine: CGFloat = 12.0
     /// 线的宽度
     let lineWidth: CGFloat = 1.0
 
@@ -131,7 +126,6 @@ class ZoomableRuler: UIControl {
                                    screenUnitValue: screenUnitValue,
                                    centerUnitValue: centerUintValue,
                                    pixelPerUnit: pixelPerUnit,
-                                   pixelPerLine: pixelPerLine-lineWidth,
                                    lineWidth: lineWidth)
         zLayer.totalWidth = scrollViewContentWidth
         zLayer.scale = startScale
@@ -163,8 +157,7 @@ class ZoomableRuler: UIControl {
         zLayer.scale = startScale
 
         zLayer.update(withStartPoint: CGPoint(x: zLayer.startPoint.x * scale, y: 0),
-                      pixelPerUnit: pixelPerUnit,
-                      pixelPerLine: (pixelPerLine - lineWidth)*startScale)
+                      pixelPerUnit: pixelPerUnit)
 
         let offset = scrollView.frame.size.width - scrollView.contentInset.left
         var layerFrame = CGRect(x: (scrollView.contentOffset.x + offset)*scale - offset - zLayer.frame.size.width/2,
