@@ -39,6 +39,10 @@ class ZoomableRuler: UIControl {
     /// 一屏内容所表达的大小
     let screenUnitValue: CGFloat = 3*3600.0
 
+    var layerMaxWidth: CGFloat {
+        scrollView.frame.size.width*3
+    }
+
     /// 显示在中央的数值
     private(set) var centerUintValue: CGFloat = 0
     /// Ruler最小的值
@@ -160,9 +164,13 @@ class ZoomableRuler: UIControl {
                       pixelPerUnit: pixelPerUnit)
 
         let offset = scrollView.frame.size.width - scrollView.contentInset.left
+        // 如果一开始就很少数据，不足一个屏，就可以放到到最大3个屏的layer
+        var layerWidth = zLayer.frame.size.width*scale > layerMaxWidth ? layerMaxWidth : zLayer.frame.size.width*scale
+        // 缩小的时候，如果比 contentSize.width 还小的话，就
+        layerWidth = layerWidth < scrollView.contentSize.width*scale ? scrollView.contentSize.width*scale : layerWidth
         var layerFrame = CGRect(x: (scrollView.contentOffset.x + offset)*scale - offset - zLayer.frame.size.width/2,
                                 y: zLayer.frame.origin.y,
-                                width: zLayer.frame.size.width,
+                                width: layerWidth,
                                 height: zLayer.frame.size.height)
         if layerFrame.maxX > zLayer.totalWidth {
             layerFrame.origin.x = zLayer.totalWidth - zLayer.frame.size.width
@@ -186,7 +194,7 @@ class ZoomableRuler: UIControl {
     /// - Returns: 新一个时间段的宽度
     private func defaultWidthByUpdatePixelPerUnit() -> CGFloat {
 //        let scrollViewContentWidth = screenUnitValue*startScale/25
-        let scrollViewContentWidth = scrollView.frame.size.width*3*startScale
+        let scrollViewContentWidth = layerMaxWidth*startScale
         pixelPerUnit = scrollViewContentWidth/screenUnitValue
 //        print("pixelPerUnit: \(pixelPerUnit)")
         return scrollViewContentWidth
