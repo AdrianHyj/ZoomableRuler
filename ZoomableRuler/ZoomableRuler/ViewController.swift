@@ -97,13 +97,13 @@ extension ViewController: UIScrollViewDelegate {
 }
 
 extension ViewController: ZoomableRulerDelegate {
-    func ruler(_ ruler: ZoomableRuler, shouldShowMoreInfo block: @escaping (Bool) -> (), lessThan unitValue: CGFloat) {
+    func ruler(_ ruler: ZoomableRuler, shouldShowMoreInfo block: @escaping (Bool) -> (), lessThan unitValue: Double) {
         DispatchQueue.main.async {
             block(true)
         }
     }
 
-    func ruler(_ ruler: ZoomableRuler, shouldShowMoreInfo block: @escaping (Bool) -> (), moreThan unitValue: CGFloat) {
+    func ruler(_ ruler: ZoomableRuler, shouldShowMoreInfo block: @escaping (Bool) -> (), moreThan unitValue: Double) {
         DispatchQueue.main.async {
             block(true)
         }

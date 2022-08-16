@@ -9,8 +9,8 @@ import UIKit
 
 protocol ZoomableRulerDelegate: NSObjectProtocol {
     func ruler(_ ruler: ZoomableRuler, currentCenterValue unitValue: Double)
-    func ruler(_ ruler: ZoomableRuler, shouldShowMoreInfo block: @escaping (Bool)->(), lessThan unitValue: CGFloat)
-    func ruler(_ ruler: ZoomableRuler, shouldShowMoreInfo block: @escaping (Bool)->(), moreThan unitValue: CGFloat)
+    func ruler(_ ruler: ZoomableRuler, shouldShowMoreInfo block: @escaping (Bool)->(), lessThan unitValue: Double)
+    func ruler(_ ruler: ZoomableRuler, shouldShowMoreInfo block: @escaping (Bool)->(), moreThan unitValue: Double)
 }
 
 class ZoomableRuler: UIControl {
@@ -252,7 +252,7 @@ extension ZoomableRuler: UIScrollViewDelegate {
                     if should {
                         self?.lessToGo()
                     }
-                }, lessThan: centerUintValue - contentScreenWidth/2*pixelPerUnit)
+                }, lessThan: Double(centerUintValue - contentScreenWidth/2*pixelPerUnit))
             }
             return
         } else if contentOffsetX > contentSizeWidth - contentScreenWidth {
@@ -264,7 +264,7 @@ extension ZoomableRuler: UIScrollViewDelegate {
                     if should {
                         self?.moreToGo()
                     }
-                }, moreThan: centerUintValue + contentScreenWidth/2*pixelPerUnit)
+                }, moreThan: Double(centerUintValue + contentScreenWidth/2*pixelPerUnit))
             }
             return
         }
