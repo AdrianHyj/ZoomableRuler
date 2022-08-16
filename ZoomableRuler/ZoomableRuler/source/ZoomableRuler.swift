@@ -83,10 +83,10 @@ class ZoomableRuler: UIControl {
     func setCenterUnitValue(_ value: Double, maxUnitValue: Double? = nil, minUnitValue: Double? = nil) {
         self.maxUnitValue = nil
         self.minUnitValue = nil
-        if let maxValue = maxUnitValue, value < maxValue {
+        if let maxValue = maxUnitValue, value <= maxValue {
             self.maxUnitValue = CGFloat(maxValue)
         }
-        if let minValue = minUnitValue, value > minValue {
+        if let minValue = minUnitValue, value >= minValue {
             self.minUnitValue = CGFloat(minValue)
         }
         self.centerUintValue = CGFloat(value)
