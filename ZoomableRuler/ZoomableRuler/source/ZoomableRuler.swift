@@ -164,10 +164,14 @@ class ZoomableRuler: UIControl {
                       pixelPerUnit: pixelPerUnit)
 
         let offset = scrollView.frame.size.width - scrollView.contentInset.left
-        // 如果一开始就很少数据，不足一个屏，就可以放到到最大3个屏的layer
-        var layerWidth = zLayer.frame.size.width*scale > layerMaxWidth ? layerMaxWidth : zLayer.frame.size.width*scale
-        // 缩小的时候，如果比 contentSize.width 还小的话，就
-        layerWidth = layerWidth < scrollView.contentSize.width*scale ? scrollView.contentSize.width*scale : layerWidth
+        var layerWidth = zLayer.frame.size.width*scale
+        if zLayer.frame.size.width*scale > layerMaxWidth {
+            // 如果一开始就很少数据，不足一个屏，就可以放到到最大3个屏的layer
+            layerWidth = layerMaxWidth
+        } else if layerWidth < scrollView.contentSize.width*scale {
+            // 缩小的时候，如果比 scrollView.contentSize.width*scale 还小的话，就用 scrollView.contentSize.width*scale
+            layerWidth = scrollView.contentSize.width*scale
+        }
         var layerFrame = CGRect(x: (scrollView.contentOffset.x + offset)*scale - offset - zLayer.frame.size.width/2,
                                 y: zLayer.frame.origin.y,
                                 width: layerWidth,
