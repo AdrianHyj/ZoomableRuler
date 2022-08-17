@@ -18,11 +18,21 @@ class ZoomableLayer: CALayer {
     let lineWidth: CGFloat
     /// 总的宽度
     var totalWidth: CGFloat = 0
-    
+
     var scale: CGFloat = 1
 
-
     private(set) var pixelPerUnit: CGFloat
+
+    /// 二维数组
+    /// 从上往下排，画出选中的区域
+    var selectedAreas: [[ZoomableRulerSelectedArea]] = [] {
+        didSet {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            setNeedsDisplay(frame)
+            CATransaction.commit()
+        }
+    }
 
     init(withStartPoint startPoint: CGPoint, screenUnitValue: CGFloat, centerUnitValue: CGFloat, pixelPerUnit: CGFloat, lineWidth: CGFloat) {
         self.startPoint = startPoint
@@ -31,7 +41,7 @@ class ZoomableLayer: CALayer {
         self.pixelPerUnit = pixelPerUnit
         self.lineWidth = lineWidth
         super.init()
-        self.backgroundColor = UIColor.blue.cgColor
+        self.backgroundColor = UIColor.clear.cgColor
     }
 
     required init?(coder: NSCoder) {
@@ -79,29 +89,35 @@ class ZoomableLayer: CALayer {
             // 计算有多少个标记
             let numberOfLine: CGFloat = (endUnit - startUnit) / pixelsPerLine
             let unitWidth: CGFloat = totalWidth / numberOfLine
-            
+
             // text part
             let attributeString = NSAttributedString.init(string: "00:00:00", attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 11)])
             let hourTextWidth = attributeString.size().width + 5
             let hourTextHeight = attributeString.size().height
             // 现在的edgepoint
-            let edgePoint = curEdgePoint()
+//            let edgePoint = curEdgePoint()
 
             // 前面没有显示的格子的整数
-            let preUnitCount = Int((rect.minX-edgePoint.x)/unitWidth)
+            let preUnitCount = Int(rect.minX/unitWidth)
+            // 可显示的line的个数，前后 + 1 确保
+            let visibleLineCount = (rect.size.width / unitWidth) + 2
             // 第一个格子的起点
-            let offsetX = -((rect.minX-edgePoint.x) - CGFloat(preUnitCount)*unitWidth) - lineWidth/2
+            let offsetX = -(rect.minX - CGFloat(preUnitCount)*unitWidth) - lineWidth/2
 
-            for i in 0 ..< Int(numberOfLine) {
+            let shortLineHeight: CGFloat = 6
+            let longLineHeight: CGFloat = 10
+
+            for visibleIndex in 0 ..< Int(visibleLineCount) {
+                let i = visibleIndex
                 let position: CGFloat = CGFloat(i)*unitWidth
-                // 超过显示范围的不理
-                if (offsetX + position < 0) || (offsetX + position) > rect.size.width + lineWidth/2 {
-                    continue
-                }
+//                // 超过显示范围的不理
+//                if (offsetX + position < 0) || (offsetX + position) > rect.size.width + lineWidth/2 {
+//                    continue
+//                }
                 // 评断是长线还是短线, 12个格子一条长线，每个格子都是短线
                 // 第11条是短线，第12条是长线
                 let isLongLine = (preUnitCount+i)%12 == 0
-                let upperLineRect = CGRect(x: offsetX + position - lineWidth/2, y: 0, width: 1, height: isLongLine ? 10 : 6)
+                let upperLineRect = CGRect(x: offsetX + position - lineWidth/2, y: 0, width: 1, height: isLongLine ? longLineHeight : shortLineHeight)
                 ctx.setFillColor(UIColor.white.cgColor)
                 ctx.fill(upperLineRect)
 
@@ -121,6 +137,55 @@ class ZoomableLayer: CALayer {
                     ocString.draw(in: textRect, withAttributes: textAttr)
                 }
             }
+
+            // 画选择区域
+            var leftValue: CGFloat = 0
+            if rect.minX > startPoint.x {
+                leftValue = (rect.minX - startPoint.x)/pixelPerUnit + centerUnitValue
+            } else {
+                leftValue = centerUnitValue - (startPoint.x - rect.minX)/pixelPerUnit
+            }
+            let rightValue = leftValue + rect.size.width/pixelPerUnit
+            let originY = longLineHeight + 10 + hourTextHeight + 5
+            let height = (rect.size.height - originY)/4.0
+            ctx.setFillColor(UIColor.green.cgColor)
+            for i in 0 ..< selectedAreas.count {
+                let lineAreas = selectedAreas[i]
+                for area in lineAreas {
+                    if area.endValue <= leftValue {
+                        continue
+                    }
+                    else if area.endValue > leftValue {
+                        let cut = area.startValue < leftValue
+                        let headValue = cut ? leftValue : area.startValue
+                        let tailValue = area.endValue > rightValue ? rightValue : area.endValue
+                        let areaPath = UIBezierPath(roundedRect: CGRect(x: (headValue - leftValue)*pixelPerUnit,
+                                                                        y: originY + CGFloat(i)*height,
+                                                                        width: (tailValue - headValue)*pixelPerUnit,
+                                                                        height: height),
+                                                    byRoundingCorners: (cut ? [.topRight, .bottomRight] : .allCorners),
+                                                    cornerRadii: CGSize(width: height/2, height: height/2))
+                        ctx.addPath(areaPath.cgPath)
+                        ctx.closePath()
+                        ctx.drawPath(using: .fill)
+                    } else if area.startValue < rightValue {
+                        let cut = area.endValue > rightValue
+                        let tailValue = cut ? rightValue : area.endValue
+                        let areaPath = UIBezierPath(roundedRect: CGRect(x: rect.size.width - (tailValue - area.startValue)/pixelPerUnit,
+                                                                        y: originY + CGFloat(i)*height,
+                                                                        width: (tailValue - area.startValue)/pixelPerUnit,
+                                                                        height: height),
+                                                    byRoundingCorners: (cut ? [.topLeft, .bottomLeft] : .allCorners),
+                                                    cornerRadii: CGSize(width: height/2, height: height/2))
+                        ctx.addPath(areaPath.cgPath)
+                        ctx.closePath()
+                        ctx.drawPath(using: .fill)
+                    } else if area.startValue >= rightValue {
+                        break
+                    }
+                }
+            }
+
             if let imageToDraw = UIGraphicsGetImageFromCurrentImageContext() {
                 UIGraphicsEndImageContext()
                 contents = imageToDraw.cgImage

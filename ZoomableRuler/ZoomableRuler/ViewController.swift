@@ -11,9 +11,9 @@ class ViewController: UIViewController {
 
     lazy var centerTitleLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 16.0)
+        label.font = UIFont.systemFont(ofSize: 16.0, weight: .bold)
         label.textAlignment = .center
-        label.textColor = .black
+        label.textColor = .white
         return label
     }()
 
@@ -39,7 +39,7 @@ class ViewController: UIViewController {
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659592800.0, minUnitValue: 1659578400.0)
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659609351.0, minUnitValue: 1659578400.0)
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659592800.0, minUnitValue: 1659561849.0)
-        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: centerUnitValue+360, minUnitValue: centerUnitValue-360)
+        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: centerUnitValue, minUnitValue: centerUnitValue-31*24*3600)
 
 //        let centerUnitValue: Double = 1660276800.0
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1660298767.0, minUnitValue: 1657620367.0)
@@ -63,8 +63,10 @@ class ViewController: UIViewController {
         scrollview.backgroundColor = .lightGray
         scrollview.contentSize = CGSize(width: 2250.5, height: 180)
 //        scrollview.contentInset = UIEdgeInsets(top: 0, left: 200, bottom: 0, right: scrollview.frame.size.width/2)
-        view.addSubview(scrollview)
-        self.scrollview = scrollview
+//        view.addSubview(scrollview)
+//        self.scrollview = scrollview
+
+        view.backgroundColor = .brown
     }
 
     override func viewDidAppear(_ animated: Bool) {
