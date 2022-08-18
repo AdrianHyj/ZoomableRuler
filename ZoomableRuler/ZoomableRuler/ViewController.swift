@@ -11,7 +11,7 @@ class ViewController: UIViewController {
 
     lazy var centerTitleLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 16.0, weight: .bold)
+        label.font = UIFont.systemFont(ofSize: 16.0)
         label.textAlignment = .center
         label.textColor = .white
         return label
@@ -35,11 +35,11 @@ class ViewController: UIViewController {
         let zoomableRuler = ZoomableRuler(frame: CGRect(x: 0, y: 200, width: view.frame.size.width, height: 180))
         zoomableRuler.delegate = self
         let centerUnitValue: Double = 1659585600.0
-//        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659609351.0, minUnitValue: 1659561849.0)
+        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659609351.0, minUnitValue: 1659561849.0)
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659592800.0, minUnitValue: 1659578400.0)
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659609351.0, minUnitValue: 1659578400.0)
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659592800.0, minUnitValue: 1659561849.0)
-        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: centerUnitValue, minUnitValue: centerUnitValue-31*24*3600)
+//        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: centerUnitValue+160, minUnitValue: centerUnitValue-160)
 
 //        let centerUnitValue: Double = 1660276800.0
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1660298767.0, minUnitValue: 1657620367.0)
@@ -99,6 +99,14 @@ extension ViewController: UIScrollViewDelegate {
 }
 
 extension ViewController: ZoomableRulerDelegate {
+    func rulerReachMinimumValue(_ ruler: ZoomableRuler) {
+//        print("rulerReachMinimumValue")
+    }
+
+    func rulerReachMaximumValue(_ ruler: ZoomableRuler) {
+//         print("rulerReachMaximumValue")
+    }
+
     func ruler(_ ruler: ZoomableRuler, shouldShowMoreInfo block: @escaping (Bool) -> (), lessThan unitValue: Double) {
         DispatchQueue.main.async {
             block(true)

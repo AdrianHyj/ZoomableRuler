@@ -21,6 +21,7 @@ class ZoomableLayer: CALayer {
 
     var scale: CGFloat = 1
 
+    /// 每一个值反应到屏幕的pixel
     private(set) var pixelPerUnit: CGFloat
 
     /// 二维数组
@@ -108,15 +109,10 @@ class ZoomableLayer: CALayer {
             let longLineHeight: CGFloat = 10
 
             for visibleIndex in 0 ..< Int(visibleLineCount) {
-                let i = visibleIndex
-                let position: CGFloat = CGFloat(i)*unitWidth
-//                // 超过显示范围的不理
-//                if (offsetX + position < 0) || (offsetX + position) > rect.size.width + lineWidth/2 {
-//                    continue
-//                }
+                let position: CGFloat = CGFloat(visibleIndex)*unitWidth
                 // 评断是长线还是短线, 12个格子一条长线，每个格子都是短线
                 // 第11条是短线，第12条是长线
-                let isLongLine = (preUnitCount+i)%12 == 0
+                let isLongLine = (preUnitCount+visibleIndex+1)%12 == 0
                 let upperLineRect = CGRect(x: offsetX + position - lineWidth/2, y: 0, width: 1, height: isLongLine ? longLineHeight : shortLineHeight)
                 ctx.setFillColor(UIColor.white.cgColor)
                 ctx.fill(upperLineRect)
