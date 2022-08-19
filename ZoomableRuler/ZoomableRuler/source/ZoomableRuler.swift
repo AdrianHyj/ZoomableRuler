@@ -80,6 +80,10 @@ class ZoomableRuler: UIControl {
 
     /// 线的宽度
     let lineWidth: CGFloat = 1.0
+    /// 显示文本的宽度
+    let labelWidth: CGFloat
+    /// 显示文本的高度
+    let labelHeight: CGFloat
 
     /// 缩放手势
     var pinchGesture: UIPinchGestureRecognizer?
@@ -103,6 +107,9 @@ class ZoomableRuler: UIControl {
     }()
 
     override init(frame: CGRect) {
+        let attributeString = NSAttributedString.init(string: "00:00:00", attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 11)])
+        labelWidth = attributeString.size().width + 5
+        labelHeight = attributeString.size().height
         super.init(frame: frame)
         backgroundColor = .clear
 
@@ -180,6 +187,7 @@ class ZoomableRuler: UIControl {
                                    centerUnitValue: centerUintValue,
                                    pixelPerUnit: pixelPerUnit,
                                    lineWidth: lineWidth)
+        zLayer.dataSource = self
         zLayer.totalWidth = scrollViewContentWidth
         zLayer.scale = startScale
         zLayer.frame = CGRect(x: scrollViewContentWidth > layerMaxWidth ? (scrollViewContentWidth - layerMaxWidth) : 0,
@@ -492,5 +500,11 @@ extension ZoomableRuler: UIScrollViewDelegate {
                 CATransaction.commit()
             }
         }
+    }
+}
+
+extension ZoomableRuler: ZoomableLayerDataSource {
+    func layerRequestLabelSize(_ layer: ZoomableLayer) -> CGSize {
+        CGSize(width: labelWidth, height: labelHeight)
     }
 }

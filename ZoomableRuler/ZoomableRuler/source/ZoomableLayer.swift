@@ -7,7 +7,14 @@
 
 import UIKit
 
+protocol ZoomableLayerDataSource: NSObjectProtocol {
+    /// 显示文本的宽高
+    func layerRequestLabelSize(_ layer: ZoomableLayer) -> CGSize
+}
+
 class ZoomableLayer: CALayer {
+    weak var dataSource: ZoomableLayerDataSource?
+
     /// 初始化时确定不变的第一个居中的值，所处于的坐标，后期会根据layer的frame的变化而做出对应的改变
     var startPoint: CGPoint
     /// 初始化时确定不变的第一个居中的值，用于判断划线，具体数值的显示
@@ -92,9 +99,7 @@ class ZoomableLayer: CALayer {
             let unitWidth: CGFloat = totalWidth / numberOfLine
 
             // text part
-            let attributeString = NSAttributedString.init(string: "00:00:00", attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 11)])
-            let hourTextWidth = attributeString.size().width + 5
-            let hourTextHeight = attributeString.size().height
+            let timeTextSize = dataSource?.layerRequestLabelSize(self) ?? CGSize.zero
             // 现在的edgepoint
 //            let edgePoint = curEdgePoint()
 
@@ -103,7 +108,7 @@ class ZoomableLayer: CALayer {
             // 可显示的line的个数，前后 + 1 确保
             let visibleLineCount = (rect.size.width / unitWidth) + 2
             // 第一个格子的起点
-            let offsetX = -(rect.minX - CGFloat(preUnitCount)*unitWidth) - lineWidth/2
+            let offsetX = (unitWidth - (rect.minX - CGFloat(preUnitCount)*unitWidth)) - lineWidth/2
 
             let shortLineHeight: CGFloat = 6
             let longLineHeight: CGFloat = 10
@@ -118,12 +123,15 @@ class ZoomableLayer: CALayer {
                 ctx.fill(upperLineRect)
 
                 if isLongLine {
+                    let paragraphStyle = NSMutableParagraphStyle()
+                    paragraphStyle.alignment = .center
                     let textAttr = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 11.0),
-                                    NSAttributedString.Key.foregroundColor: UIColor.white]
-                    let textRect = CGRect(x: upperLineRect.origin.x - hourTextWidth/2,
+                                    NSAttributedString.Key.foregroundColor: UIColor.white,
+                                    NSAttributedString.Key.paragraphStyle: paragraphStyle]
+                    let textRect = CGRect(x: upperLineRect.origin.x - timeTextSize.width/2,
                                           y: upperLineRect.maxY + 10,
-                                          width: hourTextWidth,
-                                          height: hourTextHeight)
+                                          width: timeTextSize.width,
+                                          height: timeTextSize.height)
                     let lineUnit: Int = Int(centerUnitValue + 8*3600.0 + (rect.minX + lineWidth/2 - startPoint.x + upperLineRect.origin.x + lineWidth/2)/pixelPerUnit)
                     let hour: Int = lineUnit%(24*3600)/3600
                     let min: Int = lineUnit%(24*3600)%3600/60
@@ -142,7 +150,7 @@ class ZoomableLayer: CALayer {
                 leftValue = centerUnitValue - (startPoint.x - rect.minX)/pixelPerUnit
             }
             let rightValue = leftValue + rect.size.width/pixelPerUnit
-            let originY = longLineHeight + 10 + hourTextHeight + 5
+            let originY = longLineHeight + 10 + timeTextSize.height + 5
             let height = (rect.size.height - originY)/4.0
             ctx.setFillColor(UIColor.green.cgColor)
             for i in 0 ..< selectedAreas.count {
