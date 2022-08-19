@@ -27,6 +27,8 @@ class ZoomableLayer: CALayer {
     var totalWidth: CGFloat = 0
 
     var scale: CGFloat = 1
+     /// 前后的空挡
+    var marginWidth: CGFloat = 0
 
     /// 每一个值反应到屏幕的pixel
     private(set) var pixelPerUnit: CGFloat
@@ -73,12 +75,6 @@ class ZoomableLayer: CALayer {
         setNeedsDisplay(frame)
     }
 
-    private func curEdgePoint() -> CGPoint {
-        let leftValue = CGFloat(Int(self.centerUnitValue/screenUnitValue))*screenUnitValue
-        let valuePixel = (self.centerUnitValue - leftValue)*pixelPerUnit
-        return CGPoint(x: startPoint.x - valuePixel, y: 0)
-    }
-
     private func drawFrame(in rect: CGRect) {
         UIGraphicsBeginImageContextWithOptions(rect.size, false, UIScreen.main.scale)
         if let ctx = UIGraphicsGetCurrentContext() {
@@ -100,13 +96,11 @@ class ZoomableLayer: CALayer {
 
             // text part
             let timeTextSize = dataSource?.layerRequestLabelSize(self) ?? CGSize.zero
-            // 现在的edgepoint
-//            let edgePoint = curEdgePoint()
 
             // 前面没有显示的格子的整数
-            let preUnitCount = Int(rect.minX/unitWidth)
-            // 可显示的line的个数，前后 + 1 确保
-            let visibleLineCount = (rect.size.width / unitWidth) + 2
+            let preUnitCount = Int((rect.minX + marginWidth)/unitWidth)
+            // 可显示的line的个数
+            let visibleLineCount = ((rect.size.width - marginWidth*2)/unitWidth)
             // 第一个格子的起点
             let offsetX = (unitWidth - (rect.minX - CGFloat(preUnitCount)*unitWidth)) - lineWidth/2
 

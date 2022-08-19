@@ -68,6 +68,8 @@ class ZoomableRuler: UIControl {
     let layerMaxWidth: CGFloat = UIScreen.main.bounds.size.width*3
     /// 最小的layer宽度
     var layerMinWidth: CGFloat = 0
+    /// 最小的内容宽度
+    var scrollViewContentMinWidth: CGFloat = 0
 
     /// 显示在中央的数值
     private(set) var centerUintValue: CGFloat = 0
@@ -84,6 +86,8 @@ class ZoomableRuler: UIControl {
     let labelWidth: CGFloat
     /// 显示文本的高度
     let labelHeight: CGFloat
+    /// 前后的空挡
+    let marginWidth: CGFloat
 
     /// 缩放手势
     var pinchGesture: UIPinchGestureRecognizer?
@@ -110,6 +114,7 @@ class ZoomableRuler: UIControl {
         let attributeString = NSAttributedString.init(string: "00:00:00", attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 11)])
         labelWidth = attributeString.size().width + 5
         labelHeight = attributeString.size().height
+        marginWidth = CGFloat(ceil(Double(labelWidth/2)))
         super.init(frame: frame)
         backgroundColor = .clear
 
@@ -190,9 +195,11 @@ class ZoomableRuler: UIControl {
         zLayer.dataSource = self
         zLayer.totalWidth = scrollViewContentWidth
         zLayer.scale = startScale
-        zLayer.frame = CGRect(x: scrollViewContentWidth > layerMaxWidth ? (scrollViewContentWidth - layerMaxWidth) : 0,
-                              y: startPoint.y,
-                              width: scrollViewContentWidth > layerMaxWidth ? layerMaxWidth : scrollViewContentWidth,
+        zLayer.marginWidth = marginWidth
+        // layer的定位会再layoutSubviews的方法中完成
+        zLayer.frame = CGRect(x: 0,
+                              y: 0,
+                              width: (scrollViewContentWidth > layerMaxWidth ? layerMaxWidth : scrollViewContentWidth) + marginWidth*2,
                               height: scrollView.frame.size.height)
 
         scrollView.layer.addSublayer(zLayer)
@@ -216,7 +223,13 @@ class ZoomableRuler: UIControl {
         // 更新屏幕的px对应表达的数值
         let _ = defaultWidthByUpdatePixelPerUnit()
 
-        zLayer.totalWidth = scrollView.contentSize.width*scale
+        // CGFloat的位数是有限的，所以如果小数点前的位数增多，从两位数变到4位数的话，小数后就会自动舍弃
+        // 界面是通过scrollview的contentsize.width和layer的width做对比的，为了尽量保证数据一样，这里先做舍弃
+        let counts: CGFloat = 1000000000
+        let checkWidth = CGFloat(Int(scrollView.contentSize.width*scale*counts)/Int(counts))
+        zLayer.totalWidth = checkWidth < scrollViewContentMinWidth ? scrollViewContentMinWidth : checkWidth
+
+//        zLayer.totalWidth = scrollView.contentSize.width*scale
         zLayer.scale = startScale
 
         // 同步初始值在此缩放比率下对应的坐标
@@ -226,25 +239,25 @@ class ZoomableRuler: UIControl {
         let offset = scrollView.frame.size.width - scrollView.contentInset.left
 
         // 由于layer 和 contentsize.width 的缩放机制不同， layer只能根据自身的限制做缩放
-        var layerWidth = zLayer.frame.size.width < scrollView.contentSize.width ? zLayer.frame.size.width : zLayer.totalWidth
-        if layerWidth > layerMaxWidth {
+        var layerWidth = (zLayer.frame.size.width - marginWidth*2) < scrollView.contentSize.width ? zLayer.frame.size.width : zLayer.totalWidth + marginWidth*2
+        if layerWidth > layerMaxWidth + marginWidth*2 {
             // 如果一开始就很少数据，不足一个屏，就可以放到到最大3个屏的layer
-            layerWidth = layerMaxWidth
-        } else if layerWidth < layerMinWidth {
+            layerWidth = layerMaxWidth + marginWidth*2
+        } else if layerWidth < layerMinWidth + marginWidth*2 {
             // 在缩小的情况下
             // 缩小的时候，如果比 layerMinWidth（一开始通过判断定下来的）小，就停止
-            layerWidth = layerMinWidth
+            layerWidth = layerMinWidth + marginWidth*2
         }
-        var layerFrame = CGRect(x: (scrollView.contentOffset.x + offset)*scale - offset - zLayer.frame.size.width/2,
+        var layerFrame = CGRect(x: (scrollView.contentOffset.x + offset)*scale - offset - zLayer.frame.size.width/2 - marginWidth,
                                 y: zLayer.frame.origin.y,
                                 width: layerWidth,
                                 height: zLayer.frame.size.height)
         // 在缩放的情况下，如果右边超过了滚动区域的范围，强行向左缩放
         // 左边超过了的话，同理
-        if layerFrame.maxX > zLayer.totalWidth {
-            layerFrame.origin.x = zLayer.totalWidth - zLayer.frame.size.width
+        if layerFrame.maxX - marginWidth*2 > zLayer.totalWidth {
+            layerFrame.origin.x = zLayer.totalWidth - zLayer.frame.size.width + marginWidth
         } else if layerFrame.minX < 0 {
-            layerFrame.origin.x = 0
+            layerFrame.origin.x = -marginWidth
         }
         // 更新layer 的frame
         zLayer.frame = layerFrame
@@ -317,6 +330,7 @@ class ZoomableRuler: UIControl {
         }
         // 最小的layer的宽度
         layerMinWidth = scrollViewContentWidth > layerMaxWidth ? layerMaxWidth : scrollViewContentWidth
+        scrollViewContentMinWidth = scrollViewContentWidth
 
         return (CGPoint(x: (uintValue - leftValue)*pixelPerUnit, y: 0), scrollViewContentWidth)
     }
@@ -334,7 +348,7 @@ class ZoomableRuler: UIControl {
         let oldStartPointX = zLayer.startPoint.x
         if let minValue = minUnitValue {
             // 买个保险，如果超出最小值，不增加距离
-            if zLayer.centerUnitValue - (oldStartPointX - zLayer.frame.minX)/pixelPerUnit <= minValue {
+            if zLayer.centerUnitValue - (oldStartPointX - zLayer.frame.minX + marginWidth)/pixelPerUnit <= minValue {
                 loadMoreWidth = 0
             } else {
                 // 最小值离当前开始点的距离
@@ -352,16 +366,16 @@ class ZoomableRuler: UIControl {
         zLayer.totalWidth = self.scrollView.contentSize.width + loadMoreWidth
 
         var layerFrame = zLayer.frame
-        let layerWidth = zLayer.totalWidth > layerMaxWidth ? layerMaxWidth : zLayer.totalWidth
+        let layerWidth = (zLayer.totalWidth > layerMaxWidth ? layerMaxWidth : zLayer.totalWidth) + marginWidth*2
         layerFrame.size.width = layerWidth
         // 根据改变后的layer的宽度和当前Offset的坐标，计算出Layer需要的位置
-        layerFrame.origin.x = scrollViewOffsetX - layerFrame.size.width/2
-        if layerFrame.maxX > zLayer.totalWidth {
+        layerFrame.origin.x = scrollViewOffsetX - layerFrame.size.width/2 - marginWidth
+        if layerFrame.maxX - marginWidth*2 > zLayer.totalWidth {
             // 如果再最后边缘
-            layerFrame.origin.x = zLayer.totalWidth - layerFrame.size.width
-        } else if layerFrame.minX < 0 {
+            layerFrame.origin.x = zLayer.totalWidth - layerFrame.size.width + marginWidth
+        } else if layerFrame.minX - marginWidth < 0 {
             // 如果再最左边缘
-            layerFrame.origin.x = 0
+            layerFrame.origin.x = -marginWidth
         }
         zLayer.frame = layerFrame
 
@@ -382,11 +396,11 @@ class ZoomableRuler: UIControl {
         var loadMoreWidth = defaultWidthByUpdatePixelPerUnit()
         let oldStartPointX = zLayer.startPoint.x
         if let maxValue = maxUnitValue {
-            if (zLayer.frame.maxX - oldStartPointX)/pixelPerUnit + zLayer.centerUnitValue >= maxValue {
+            if (zLayer.frame.maxX - marginWidth*2 - oldStartPointX)/pixelPerUnit + zLayer.centerUnitValue >= maxValue {
                 loadMoreWidth = 0
             } else {
                 // 最大值离当前开始点的距离
-                let maxXDistance = (maxValue - zLayer.centerUnitValue)*pixelPerUnit - (zLayer.frame.maxX - oldStartPointX)
+                let maxXDistance = (maxValue - zLayer.centerUnitValue)*pixelPerUnit - (zLayer.frame.maxX - marginWidth*2 - oldStartPointX)
                 hasMoreValue = loadMoreWidth < maxXDistance
                 loadMoreWidth = hasMoreValue ? loadMoreWidth : maxXDistance
             }
@@ -394,12 +408,12 @@ class ZoomableRuler: UIControl {
         zLayer.totalWidth = self.scrollView.contentSize.width + loadMoreWidth
 
         var layerFrame = zLayer.frame
-        let layerWidth = zLayer.totalWidth > layerMaxWidth ? layerMaxWidth : zLayer.totalWidth
+        let layerWidth = (zLayer.totalWidth > layerMaxWidth ? layerMaxWidth : zLayer.totalWidth) + marginWidth*2
         layerFrame.size.width = layerWidth
-        if layerFrame.maxX > zLayer.totalWidth {
-            layerFrame.origin.x = zLayer.totalWidth - layerFrame.size.width
-        } else if layerFrame.minX < 0 {
-            layerFrame.origin.x = 0
+        if layerFrame.maxX - marginWidth*2 > zLayer.totalWidth {
+            layerFrame.origin.x = zLayer.totalWidth - layerFrame.size.width + marginWidth
+        } else if layerFrame.minX - marginWidth < 0 {
+            layerFrame.origin.x = -marginWidth
         }
         zLayer.frame = layerFrame
 
@@ -457,45 +471,41 @@ extension ZoomableRuler: UIScrollViewDelegate {
             }
         }
 
-        if contentOffsetX + contentScreenWidth/2 > zoomableLayer.frame.minX + zoomableLayer.frame.size.width/2 {
+        if contentOffsetX + contentScreenWidth/2 > zoomableLayer.frame.minX + zoomableLayer.frame.size.width/2 + marginWidth {
             var layerFrame = CGRect(x: (contentOffsetX + contentScreenWidth/2) - zoomableLayer.frame.size.width/2,
                                     y: 0,
                                     width: zoomableLayer.frame.width,
                                     height: zoomableLayer.frame.height)
-            if layerFrame.maxX > contentSizeWidth {
+            if layerFrame.maxX - marginWidth*2 > contentSizeWidth {
                 // 如果需要移动的距离到右边边缘了，就按照右边边缘来保持不动
-                layerFrame.origin.x = contentSizeWidth - layerFrame.size.width
+                layerFrame.origin.x = contentSizeWidth - layerFrame.size.width + marginWidth
                 CATransaction.begin()
                 CATransaction.setDisableActions(true)
-                print("1 -- > \(layerFrame)")
                 zoomableLayer.frame = layerFrame
                 CATransaction.commit()
             } else {
                 // 向右移动一个屏
                 CATransaction.begin()
                 CATransaction.setDisableActions(true)
-                print("2 -- > \(layerFrame)")
                 zoomableLayer.frame = layerFrame
                 CATransaction.commit()
             }
-        } else if contentOffsetX + contentScreenWidth/2 < zoomableLayer.frame.minX + zoomableLayer.frame.size.width/2*3 {
+        } else if contentOffsetX + contentScreenWidth/2 < zoomableLayer.frame.minX + marginWidth + zoomableLayer.frame.size.width/(2*3) {
             var layerFrame = CGRect(x: (contentOffsetX + contentScreenWidth/2) - zoomableLayer.frame.size.width/2,
                                     y: 0,
                                     width: zoomableLayer.frame.width,
                                     height: zoomableLayer.frame.height)
-            if layerFrame.minX < 0 {
+            if layerFrame.minX - marginWidth < 0 {
                 // 如果需要移动的距离到左边边缘了，就按照左边边缘来保持不动
-                layerFrame.origin.x = 0
+                layerFrame.origin.x = -marginWidth
                 CATransaction.begin()
                 CATransaction.setDisableActions(true)
-                print("3 -- > \(layerFrame)")
                 zoomableLayer.frame = layerFrame
                 CATransaction.commit()
             } else {
                 // 向左移动一个屏
                 CATransaction.begin()
                 CATransaction.setDisableActions(true)
-                print("4 -- > \(layerFrame)")
                 zoomableLayer.frame = layerFrame
                 CATransaction.commit()
             }
