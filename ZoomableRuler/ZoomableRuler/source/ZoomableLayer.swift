@@ -11,9 +11,13 @@ protocol ZoomableLayerDataSource: NSObjectProtocol {
     /// 显示文本的宽高
     func layerRequestLabelSize(_ layer: ZoomableLayer) -> CGSize
 }
+protocol ZoomableLayerDelegate: NSObjectProtocol {
+    func layer(_ layer: ZoomableLayer, didTapAreaID areaID: String)
+}
 
 class ZoomableLayer: CALayer {
     weak var dataSource: ZoomableLayerDataSource?
+    weak var zoomableDelegate: ZoomableLayerDelegate?
 
     /// 初始化时确定不变的第一个居中的值，所处于的坐标，后期会根据layer的frame的变化而做出对应的改变
     var startPoint: CGPoint
@@ -30,6 +34,11 @@ class ZoomableLayer: CALayer {
      /// 前后的空挡
     var marginWidth: CGFloat = 0
 
+    // 显示的区域开始的Y坐标
+    var areaOriginY: CGFloat = 0
+    // 每一个区域的高度
+    var areaLineHeight: CGFloat = 0
+
     /// 每一个值反应到屏幕的pixel
     private(set) var pixelPerUnit: CGFloat
 
@@ -43,6 +52,8 @@ class ZoomableLayer: CALayer {
             CATransaction.commit()
         }
     }
+
+    var visiableFrames: [[String: CGRect]] = []
 
     init(withStartPoint startPoint: CGPoint, screenUnitValue: CGFloat, centerUnitValue: CGFloat, pixelPerUnit: CGFloat, lineWidth: CGFloat) {
         self.startPoint = startPoint
@@ -78,6 +89,8 @@ class ZoomableLayer: CALayer {
     private func drawFrame(in rect: CGRect) {
         UIGraphicsBeginImageContextWithOptions(rect.size, false, UIScreen.main.scale)
         if let ctx = UIGraphicsGetCurrentContext() {
+
+            visiableFrames.removeAll()
 
             // 通过总长度和当前startpoint的中心值centerUnitValue算出当前的总值跨度是多少
             let startUnit = centerUnitValue - startPoint.x/pixelPerUnit
@@ -144,11 +157,12 @@ class ZoomableLayer: CALayer {
                 leftValue = centerUnitValue - (startPoint.x - rect.minX)/pixelPerUnit
             }
             let rightValue = leftValue + rect.size.width/pixelPerUnit
-            let originY = longLineHeight + 10 + timeTextSize.height + 5
-            let height = (rect.size.height - originY)/4.0
+            areaOriginY = longLineHeight + 10 + timeTextSize.height + 5
+            areaLineHeight = (rect.size.height - areaOriginY)/4.0
             ctx.setFillColor(UIColor.green.cgColor)
             for i in 0 ..< selectedAreas.count {
                 let lineAreas = selectedAreas[i]
+                var lineFrames: [String: CGRect] = [:]
                 for area in lineAreas {
                     if area.endValue <= leftValue {
                         continue
@@ -157,31 +171,36 @@ class ZoomableLayer: CALayer {
                         let cut = area.startValue < leftValue
                         let headValue = cut ? leftValue : area.startValue
                         let tailValue = area.endValue > rightValue ? rightValue : area.endValue
-                        let areaPath = UIBezierPath(roundedRect: CGRect(x: (headValue - leftValue)*pixelPerUnit,
-                                                                        y: originY + CGFloat(i)*height,
-                                                                        width: (tailValue - headValue)*pixelPerUnit,
-                                                                        height: height),
+                        let areaRect = CGRect(x: (headValue - leftValue)*pixelPerUnit,
+                                              y: areaOriginY + CGFloat(i)*areaLineHeight,
+                                              width: (tailValue - headValue)*pixelPerUnit,
+                                              height: areaLineHeight)
+                        let areaPath = UIBezierPath(roundedRect: areaRect,
                                                     byRoundingCorners: (cut ? [.topRight, .bottomRight] : .allCorners),
-                                                    cornerRadii: CGSize(width: height/2, height: height/2))
+                                                    cornerRadii: CGSize(width: areaLineHeight/2, height: areaLineHeight/2))
                         ctx.addPath(areaPath.cgPath)
                         ctx.closePath()
                         ctx.drawPath(using: .fill)
+                        lineFrames[area.id] = areaRect
                     } else if area.startValue < rightValue {
                         let cut = area.endValue > rightValue
                         let tailValue = cut ? rightValue : area.endValue
-                        let areaPath = UIBezierPath(roundedRect: CGRect(x: rect.size.width - (tailValue - area.startValue)/pixelPerUnit,
-                                                                        y: originY + CGFloat(i)*height,
-                                                                        width: (tailValue - area.startValue)/pixelPerUnit,
-                                                                        height: height),
+                        let areaRect = CGRect(x: rect.size.width - (tailValue - area.startValue)/pixelPerUnit,
+                                              y: areaOriginY + CGFloat(i)*areaLineHeight,
+                                              width: (tailValue - area.startValue)/pixelPerUnit,
+                                              height: areaLineHeight)
+                        let areaPath = UIBezierPath(roundedRect: areaRect,
                                                     byRoundingCorners: (cut ? [.topLeft, .bottomLeft] : .allCorners),
-                                                    cornerRadii: CGSize(width: height/2, height: height/2))
+                                                    cornerRadii: CGSize(width: areaLineHeight/2, height: areaLineHeight/2))
                         ctx.addPath(areaPath.cgPath)
                         ctx.closePath()
                         ctx.drawPath(using: .fill)
+                        lineFrames[area.id] = areaRect
                     } else if area.startValue >= rightValue {
                         break
                     }
                 }
+                visiableFrames.append(lineFrames)
             }
 
             if let imageToDraw = UIGraphicsGetImageFromCurrentImageContext() {
@@ -191,5 +210,19 @@ class ZoomableLayer: CALayer {
                 UIGraphicsEndImageContext()
             }
         }
+    }
+
+    override func contains(_ p: CGPoint) -> Bool {
+        guard p.y > areaOriginY else { return true}
+        let lineIndex = Int(ceil(Double((p.y - areaOriginY)/areaLineHeight))) - 1
+        guard lineIndex < visiableFrames.count else { return true }
+        let lineFrames = visiableFrames[lineIndex]
+        for lineFramesID in lineFrames.keys {
+            if lineFrames[lineFramesID]?.contains(p) ?? false {
+                zoomableDelegate?.layer(self, didTapAreaID: lineFramesID)
+                break
+            }
+        }
+        return true
     }
 }

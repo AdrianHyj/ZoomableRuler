@@ -26,9 +26,12 @@ protocol ZoomableRulerDelegate: NSObjectProtocol {
     func ruler(_ ruler: ZoomableRuler, shouldShowMoreInfo block: @escaping (Bool)->(), moreThan unitValue: Double)
     /// 当前达到最大值
     func rulerReachMaximumValue(_ ruler: ZoomableRuler)
+    /// 点击了区域的id
+    func ruler(_ ruler: ZoomableRuler, didTapAreaID areaID: String)
 }
 
 struct ZoomableRulerSelectedArea {
+    let id: String
     let startValue: Double
     let endValue: Double
 }
@@ -91,6 +94,8 @@ class ZoomableRuler: UIControl {
 
     /// 缩放手势
     var pinchGesture: UIPinchGestureRecognizer?
+    /// 点击手势
+    var tapGesture: UITapGestureRecognizer?
 
     /// 二维数组
     /// 从上往下排，画出选中的区域
@@ -123,6 +128,10 @@ class ZoomableRuler: UIControl {
         let pichGR = UIPinchGestureRecognizer.init(target: self, action: #selector(pinchAction(recoginer:)))
         addGestureRecognizer(pichGR)
         pinchGesture = pichGR
+
+        let tabGR = UITapGestureRecognizer.init(target: self, action: #selector(tapAction(recoginer:)))
+        addGestureRecognizer(tabGR)
+        tapGesture = tabGR
     }
 
     required init?(coder: NSCoder) {
@@ -163,6 +172,15 @@ class ZoomableRuler: UIControl {
         }
     }
 
+    @objc private func tapAction(recoginer: UITapGestureRecognizer) -> Void {
+        guard let zoomableLayer = zoomableLayer else {
+            return
+        }
+        let point = recoginer.location(in: scrollView)
+        let layerPoint = zoomableLayer.convert(point, from: scrollView.layer)
+        let _ = zoomableLayer.contains(layerPoint)
+    }
+
     func scrollToTime(_ timestamp: Double) {
         guard let zLayer = zoomableLayer else { return }
         let timePoint = CGPoint(x: zLayer.startPoint.x + (timestamp - zLayer.centerUnitValue)*pixelPerUnit, y: 0)
@@ -193,6 +211,7 @@ class ZoomableRuler: UIControl {
                                    pixelPerUnit: pixelPerUnit,
                                    lineWidth: lineWidth)
         zLayer.dataSource = self
+        zLayer.zoomableDelegate = self
         zLayer.totalWidth = scrollViewContentWidth
         zLayer.scale = startScale
         zLayer.marginWidth = marginWidth
@@ -516,5 +535,11 @@ extension ZoomableRuler: UIScrollViewDelegate {
 extension ZoomableRuler: ZoomableLayerDataSource {
     func layerRequestLabelSize(_ layer: ZoomableLayer) -> CGSize {
         CGSize(width: labelWidth, height: labelHeight)
+    }
+}
+
+extension ZoomableRuler: ZoomableLayerDelegate {
+    func layer(_ layer: ZoomableLayer, didTapAreaID areaID: String) {
+        delegate?.ruler(self, didTapAreaID: areaID)
     }
 }
