@@ -244,10 +244,11 @@ class ZoomableRuler: UIControl {
         // 更新屏幕的px对应表达的数值
         let _ = defaultWidthByUpdatePixelPerUnit()
 
-        // CGFloat的位数是有限的，所以如果小数点前的位数增多，从两位数变到4位数的话，小数后就会自动舍弃
-        // 界面是通过scrollview的contentsize.width和layer的width做对比的，为了尽量保证数据一样，这里先做舍弃
-        let counts: CGFloat = 1000000000
-        let checkWidth = CGFloat(Int(scrollView.contentSize.width*scale*counts)/Int(counts))
+//        // CGFloat的位数是有限的，所以如果小数点前的位数增多，从两位数变到4位数的话，小数后就会自动舍弃
+//        // 界面是通过scrollview的contentsize.width和layer的width做对比的，为了尽量保证数据一样，这里先做舍弃
+//        let counts: CGFloat = 1000000000
+//        let checkWidth = CGFloat(Int(scrollView.contentSize.width*scale*counts)/Int(counts))
+        let checkWidth = scrollView.contentSize.width*scale
         zLayer.totalWidth = checkWidth < scrollViewContentMinWidth ? scrollViewContentMinWidth : checkWidth
 
 //        zLayer.totalWidth = scrollView.contentSize.width*scale
@@ -260,7 +261,9 @@ class ZoomableRuler: UIControl {
         let offset = scrollView.frame.size.width - scrollView.contentInset.left
 
         // 由于layer 和 contentsize.width 的缩放机制不同， layer只能根据自身的限制做缩放
-        var layerWidth = (zLayer.frame.size.width - marginWidth*2) < scrollView.contentSize.width ? zLayer.frame.size.width : zLayer.totalWidth + marginWidth*2
+        // CGFloat的位数是有限的，所以如果小数点前的位数增多，从两位数变到4位数的话，小数后就会自动舍弃
+        // 这里 增加1px是为了小数的唔差不能精确判定 = < > 而做的
+        var layerWidth = (zLayer.frame.size.width + 1 - marginWidth*2) < scrollView.contentSize.width ? zLayer.frame.size.width : zLayer.totalWidth + marginWidth*2
         if layerWidth > layerMaxWidth + marginWidth*2 {
             // 如果一开始就很少数据，不足一个屏，就可以放到到最大3个屏的layer
             layerWidth = layerMaxWidth + marginWidth*2
