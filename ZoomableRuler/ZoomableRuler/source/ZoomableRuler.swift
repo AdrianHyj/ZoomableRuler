@@ -28,6 +28,8 @@ protocol ZoomableRulerDelegate: NSObjectProtocol {
     func rulerReachMaximumValue(_ ruler: ZoomableRuler)
     /// 点击了区域的id
     func ruler(_ ruler: ZoomableRuler, didTapAreaID areaID: String)
+    /// 用户拖动到的值
+    func ruler(_ ruler: ZoomableRuler, userDidMoveToValue unitValue: Double)
 }
 
 struct ZoomableRulerSelectedArea {
@@ -528,6 +530,13 @@ extension ZoomableRuler: UIScrollViewDelegate {
                 zoomableLayer.frame = layerFrame
                 CATransaction.commit()
             }
+        }
+    }
+
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        if !decelerate {
+            // 用户确定选择的话，不会有 decelerate的
+            delegate?.ruler(self, userDidMoveToValue: Double(centerUintValue))
         }
     }
 }

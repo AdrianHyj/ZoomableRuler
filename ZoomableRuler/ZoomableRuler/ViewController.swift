@@ -147,4 +147,8 @@ extension ViewController: ZoomableRulerDelegate {
     func ruler(_ ruler: ZoomableRuler, didTapAreaID areaID: String) {
         print("tap area: \(areaID)")
     }
+
+    func ruler(_ ruler: ZoomableRuler, userDidMoveToValue unitValue: Double) {
+        print("userDidMoveToValue: \(unitValue)")
+    }
 }
