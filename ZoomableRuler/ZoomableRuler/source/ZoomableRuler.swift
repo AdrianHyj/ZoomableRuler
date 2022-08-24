@@ -43,7 +43,7 @@ class ZoomableRuler: UIControl {
     weak var delegate: ZoomableRulerDelegate?
 
     /// 显示内容的Layer
-    var zoomableLayer: ZoomableLayer?
+    private var zoomableLayer: ZoomableLayer?
 
     /// 正在请求更小的值，是否还有
     var requestingLess = false
@@ -98,6 +98,13 @@ class ZoomableRuler: UIControl {
     var pinchGesture: UIPinchGestureRecognizer?
     /// 点击手势
     var tapGesture: UITapGestureRecognizer?
+
+    /// 是否显示值刻度
+    var showText: Bool = true {
+        didSet {
+            zoomableLayer?.showText = showText
+        }
+    }
 
     /// 二维数组
     /// 从上往下排，画出选中的区域
@@ -212,6 +219,7 @@ class ZoomableRuler: UIControl {
                                    centerUnitValue: centerUintValue,
                                    pixelPerUnit: pixelPerUnit,
                                    lineWidth: lineWidth)
+        zLayer.showText = showText
         zLayer.dataSource = self
         zLayer.zoomableDelegate = self
         zLayer.totalWidth = scrollViewContentWidth

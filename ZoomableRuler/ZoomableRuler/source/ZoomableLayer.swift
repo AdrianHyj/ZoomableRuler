@@ -39,6 +39,9 @@ class ZoomableLayer: CALayer {
     // 每一个区域的高度
     var areaLineHeight: CGFloat = 0
 
+    /// 是否显示值刻度
+    var showText: Bool = true
+
     /// 每一个值反应到屏幕的pixel
     private(set) var pixelPerUnit: CGFloat
 
@@ -91,61 +94,63 @@ class ZoomableLayer: CALayer {
         if let ctx = UIGraphicsGetCurrentContext() {
 
             visiableFrames.removeAll()
-
-            // 通过总长度和当前startpoint的中心值centerUnitValue算出当前的总值跨度是多少
-            let startUnit = centerUnitValue - startPoint.x/pixelPerUnit
-            let endUnit = centerUnitValue + (totalWidth - startPoint.x)/pixelPerUnit
-
-            // 一格60s。如果按照屏宽375来算的话，默认三屏 screenUnitValue/(3*375)得出1屏多少pixel
-            var pixelsPerLine: CGFloat = 60
-            if scale >= 12*5 {
-                pixelsPerLine = pixelsPerLine/12/5
-            } else if scale >= 12 {
-                pixelsPerLine = pixelsPerLine/12
-            }
-            // 计算有多少个标记
-            let numberOfLine: CGFloat = (endUnit - startUnit) / pixelsPerLine
-            let unitWidth: CGFloat = totalWidth / numberOfLine
-
+            // 短刻度
+            let shortLineHeight: CGFloat = 6
+            // 长刻度
+            let longLineHeight: CGFloat = 10
             // text part
             let timeTextSize = dataSource?.layerRequestLabelSize(self) ?? CGSize.zero
 
-            // 前面没有显示的格子的整数
-            let preUnitCount = Int((rect.minX + marginWidth)/unitWidth)
-            // 可显示的line的个数
-            let visibleLineCount = ((rect.size.width - marginWidth*2)/unitWidth)
-            // 第一个格子的起点
-            let offsetX = (unitWidth - (rect.minX - CGFloat(preUnitCount)*unitWidth)) - lineWidth/2
+            if showText {
+                // 通过总长度和当前startpoint的中心值centerUnitValue算出当前的总值跨度是多少
+                let startUnit = centerUnitValue - startPoint.x/pixelPerUnit
+                let endUnit = centerUnitValue + (totalWidth - startPoint.x)/pixelPerUnit
 
-            let shortLineHeight: CGFloat = 6
-            let longLineHeight: CGFloat = 10
+                // 一格60s。如果按照屏宽375来算的话，默认三屏 screenUnitValue/(3*375)得出1屏多少pixel
+                var pixelsPerLine: CGFloat = 60
+                if scale >= 12*5 {
+                    pixelsPerLine = pixelsPerLine/12/5
+                } else if scale >= 12 {
+                    pixelsPerLine = pixelsPerLine/12
+                }
+                // 计算有多少个标记
+                let numberOfLine: CGFloat = (endUnit - startUnit) / pixelsPerLine
+                let unitWidth: CGFloat = totalWidth / numberOfLine
 
-            for visibleIndex in 0 ..< Int(visibleLineCount) {
-                let position: CGFloat = CGFloat(visibleIndex)*unitWidth
-                // 评断是长线还是短线, 12个格子一条长线，每个格子都是短线
-                // 第11条是短线，第12条是长线
-                let isLongLine = (preUnitCount+visibleIndex+1)%12 == 0
-                let upperLineRect = CGRect(x: offsetX + position - lineWidth/2, y: 0, width: 1, height: isLongLine ? longLineHeight : shortLineHeight)
-                ctx.setFillColor(UIColor.white.cgColor)
-                ctx.fill(upperLineRect)
+                // 前面没有显示的格子的整数
+                let preUnitCount = Int((rect.minX + marginWidth)/unitWidth)
+                // 可显示的line的个数
+                let visibleLineCount = ((rect.size.width - marginWidth*2)/unitWidth)
+                // 第一个格子的起点
+                let offsetX = (unitWidth - (rect.minX - CGFloat(preUnitCount)*unitWidth)) - lineWidth/2
 
-                if isLongLine {
-                    let paragraphStyle = NSMutableParagraphStyle()
-                    paragraphStyle.alignment = .center
-                    let textAttr = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 11.0),
-                                    NSAttributedString.Key.foregroundColor: UIColor.white,
-                                    NSAttributedString.Key.paragraphStyle: paragraphStyle]
-                    let textRect = CGRect(x: upperLineRect.origin.x - timeTextSize.width/2,
-                                          y: upperLineRect.maxY + 10,
-                                          width: timeTextSize.width,
-                                          height: timeTextSize.height)
-                    let lineUnit: Int = Int(centerUnitValue + 8*3600.0 + (rect.minX + lineWidth/2 - startPoint.x + upperLineRect.origin.x + lineWidth/2)/pixelPerUnit)
-                    let hour: Int = lineUnit%(24*3600)/3600
-                    let min: Int = lineUnit%(24*3600)%3600/60
-                    let sec: Int = lineUnit%(24*3600)%3600%60
-                    let timeString = String(format: "%02d:%02d:%02d", hour, min, sec)
-                    let ocString = timeString as NSString
-                    ocString.draw(in: textRect, withAttributes: textAttr)
+                for visibleIndex in 0 ..< Int(visibleLineCount) {
+                    let position: CGFloat = CGFloat(visibleIndex)*unitWidth
+                    // 评断是长线还是短线, 12个格子一条长线，每个格子都是短线
+                    // 第11条是短线，第12条是长线
+                    let isLongLine = (preUnitCount+visibleIndex+1)%12 == 0
+                    let upperLineRect = CGRect(x: offsetX + position - lineWidth/2, y: 0, width: 1, height: isLongLine ? longLineHeight : shortLineHeight)
+                    ctx.setFillColor(UIColor.white.cgColor)
+                    ctx.fill(upperLineRect)
+
+                    if isLongLine {
+                        let paragraphStyle = NSMutableParagraphStyle()
+                        paragraphStyle.alignment = .center
+                        let textAttr = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 11.0),
+                                        NSAttributedString.Key.foregroundColor: UIColor.white,
+                                        NSAttributedString.Key.paragraphStyle: paragraphStyle]
+                        let textRect = CGRect(x: upperLineRect.origin.x - timeTextSize.width/2,
+                                              y: upperLineRect.maxY + 10,
+                                              width: timeTextSize.width,
+                                              height: timeTextSize.height)
+                        let lineUnit: Int = Int(centerUnitValue + 8*3600.0 + (rect.minX + lineWidth/2 - startPoint.x + upperLineRect.origin.x + lineWidth/2)/pixelPerUnit)
+                        let hour: Int = lineUnit%(24*3600)/3600
+                        let min: Int = lineUnit%(24*3600)%3600/60
+                        let sec: Int = lineUnit%(24*3600)%3600%60
+                        let timeString = String(format: "%02d:%02d:%02d", hour, min, sec)
+                        let ocString = timeString as NSString
+                        ocString.draw(in: textRect, withAttributes: textAttr)
+                    }
                 }
             }
 
