@@ -1,49 +1,44 @@
 //
-//  ZoomableRuler.swift
+//  ZoomableHorizontalRuler.swift
 //  ZoomableRuler
 //
-//  Created by Jin on 2022/7/28.
+//  Created by Jin on 2022/8/25.
 //
 
 import UIKit
 
-protocol ZoomableRulerDelegate: NSObjectProtocol {
+protocol ZoomableHorizontalRulerDelegate: NSObjectProtocol {
     /// 当前中心的时间戳
-    func ruler(_ ruler: ZoomableRuler, currentCenterValue unitValue: Double)
+    func ruler(_ ruler: ZoomableHorizontalRuler, currentCenterValue unitValue: Double)
     /// 是否可以加载更多
     /// - Parameters:
     ///   - ruler: 尺子实例
     ///   - block: 可以处理完回调，回调true标识ruler可以加载更多
     ///   - unitValue: 请求加载更多的边界值
-    func ruler(_ ruler: ZoomableRuler, shouldShowMoreInfo block: @escaping (Bool)->(), lessThan unitValue: Double)
+    func ruler(_ ruler: ZoomableHorizontalRuler, shouldShowMoreInfo block: @escaping (Bool)->(), lessThan unitValue: Double)
     /// 当前到达最小值
-    func rulerReachMinimumValue(_ ruler: ZoomableRuler)
+    func rulerReachMinimumValue(_ ruler: ZoomableHorizontalRuler)
     /// 是否可以加载更多
     /// - Parameters:
     ///   - ruler: 尺子实例
     ///   - block: 可以处理完回调，回调true标识ruler可以加载更多
     ///   - unitValue: 请求加载更多的边界值
-    func ruler(_ ruler: ZoomableRuler, shouldShowMoreInfo block: @escaping (Bool)->(), moreThan unitValue: Double)
+    func ruler(_ ruler: ZoomableHorizontalRuler, shouldShowMoreInfo block: @escaping (Bool)->(), moreThan unitValue: Double)
     /// 当前达到最大值
-    func rulerReachMaximumValue(_ ruler: ZoomableRuler)
+    func rulerReachMaximumValue(_ ruler: ZoomableHorizontalRuler)
     /// 点击了区域的id
-    func ruler(_ ruler: ZoomableRuler, didTapAreaID areaID: String)
+    func ruler(_ ruler: ZoomableHorizontalRuler, didTapAreaID areaID: String)
     /// 用户拖动到的值
-    func ruler(_ ruler: ZoomableRuler, userDidMoveToValue unitValue: Double)
+    func ruler(_ ruler: ZoomableHorizontalRuler, userDidMoveToValue unitValue: Double)
 }
 
-struct ZoomableRulerSelectedArea {
-    let id: String
-    let startValue: Double
-    let endValue: Double
-}
 
-class ZoomableRuler: UIControl {
+class ZoomableHorizontalRuler: UIControl {
 
-    weak var delegate: ZoomableRulerDelegate?
+    weak var delegate: ZoomableHorizontalRulerDelegate?
 
     /// 显示内容的Layer
-    private var zoomableLayer: ZoomableLayer?
+    private var zoomableLayer: ZoomableHorizontalLayer?
 
     /// 正在请求更小的值，是否还有
     var requestingLess = false
@@ -69,15 +64,15 @@ class ZoomableRuler: UIControl {
 
     /// 一屏内容所表达的大小
     let screenUnitValue: CGFloat = 3*3600.0
-    /// 理论上3个屏的内容能通过移动行成用户循环的错觉
-    let layerMaxWidth: CGFloat = UIScreen.main.bounds.size.width*3
+    /// 理论上3倍于Scrollview的内容能通过移动行成用户循环的错觉
+    var layerMaxWidth: CGFloat = UIScreen.main.bounds.width*3
     /// 最小的layer宽度
     var layerMinWidth: CGFloat = 0
     /// 最小的内容宽度
     var scrollViewContentMinWidth: CGFloat = 0
 
     /// 显示在中央的数值
-    private(set) var centerUintValue: CGFloat = 0
+    private(set) var centerUnitValue: CGFloat = 0
     /// Ruler最小的值
     private(set) var minUnitValue: CGFloat?
     /// Ruler最大的值
@@ -156,7 +151,7 @@ class ZoomableRuler: UIControl {
         if let minValue = minUnitValue, value >= minValue {
             self.minUnitValue = CGFloat(Int(minValue))
         }
-        self.centerUintValue = CGFloat(Int(value))
+        self.centerUnitValue = CGFloat(Int(value))
         resetScrollView(withFrame: frame)
     }
 
@@ -195,7 +190,7 @@ class ZoomableRuler: UIControl {
         let timePoint = CGPoint(x: zLayer.startPoint.x + (timestamp - zLayer.centerUnitValue)*pixelPerUnit, y: 0)
         // 如果需求的点在当前scrollview的范围之外
         if (timePoint.x < -zLayer.startPoint.x + scrollView.contentInset.left) || (timePoint.x > scrollView.contentSize.width) {
-            centerUintValue = timestamp
+            centerUnitValue = timestamp
             resetScrollView(withFrame: frame)
         } else {
             scrollView.contentOffset = timePoint
@@ -206,21 +201,22 @@ class ZoomableRuler: UIControl {
         let contentInsetLeft = CGFloat(ceil(Double(frame.size.width/2)))
         scrollView.contentInset = UIEdgeInsets(top: 0, left: contentInsetLeft, bottom: 0, right: contentInsetLeft)
         scrollView.frame = CGRect(x: 0, y: 0, width: frame.size.width, height: frame.size.height)
+        layerMaxWidth = scrollView.frame.size.width*3
 
-        let (startPoint, scrollViewContentWidth) = startPointAndWidth(withCenterUintValue: centerUintValue)
+        let (startPoint, scrollViewContentWidth) = startPointAndWidth(withCenterUnitValue: centerUnitValue)
 
         scrollView.contentSize = CGSize(width: scrollViewContentWidth,
                                         height: scrollView.frame.size.height)
         scrollView.contentOffset = CGPoint(x: startPoint.x - scrollView.frame.size.width/2, y: 0)
 
         // layer
-        let zLayer = ZoomableLayer(withStartPoint: startPoint,
+        let zLayer = ZoomableHorizontalLayer(withStartPoint: startPoint,
                                    screenUnitValue: screenUnitValue,
-                                   centerUnitValue: centerUintValue,
+                                   centerUnitValue: centerUnitValue,
                                    pixelPerUnit: pixelPerUnit,
                                    lineWidth: lineWidth)
         zLayer.showText = showText
-        zLayer.dataSource = self
+        zLayer.zoomableDataSource = self
         zLayer.zoomableDelegate = self
         zLayer.totalWidth = scrollViewContentWidth
         zLayer.scale = startScale
@@ -314,10 +310,9 @@ class ZoomableRuler: UIControl {
     }
 
     /// 计算起始坐标
-    private func startPointAndWidth(withCenterUintValue uintValue: CGFloat) -> (CGPoint, CGFloat){
+    private func startPointAndWidth(withCenterUnitValue unitValue: CGFloat) -> (CGPoint, CGFloat){
         // 根据定义的加载一屏范围，求出中心点的所在的前后一屏
-        var leftValue = CGFloat(Int(uintValue/screenUnitValue))*screenUnitValue
-        var rightValue: CGFloat = leftValue + screenUnitValue
+        var (leftValue, rightValue) = calculateEdgeValue(withUnitValue: unitValue)
 
         // 看看最小值是否在这个范围内，如果在，就缩小展示范围
         if let minValue = minUnitValue {
@@ -330,8 +325,8 @@ class ZoomableRuler: UIControl {
         }
 
         var scrollViewContentWidth = defaultWidthByUpdatePixelPerUnit()
-        let maxX = (rightValue - uintValue)*pixelPerUnit
-        let minX = (uintValue - leftValue)*pixelPerUnit
+        let maxX = (rightValue - unitValue)*pixelPerUnit
+        let minX = (unitValue - leftValue)*pixelPerUnit
         // 是否一开始就小于默认滚动的范围, 如果是，则算出对应的Contentsize, 如果不是，则直接用默认的宽度(后续判断是否询问继续加载更多内容的时候需要)
         scrollViewContentWidth = (maxX + minX) < scrollViewContentWidth ? (maxX + minX) : scrollViewContentWidth
 
@@ -342,7 +337,7 @@ class ZoomableRuler: UIControl {
                 if let value = minUnitValue {
                     hasLessValue = (leftValue - screenUnitValue) > value
                     let leftMoreValue = hasLessValue ? (leftValue - screenUnitValue) : value
-                    scrollViewContentWidth = maxX + (uintValue - leftMoreValue)*pixelPerUnit
+                    scrollViewContentWidth = maxX + (unitValue - leftMoreValue)*pixelPerUnit
                     leftValue = leftMoreValue
                 } else {
                     scrollViewContentWidth = scrollViewContentWidth + moreDistance
@@ -352,7 +347,7 @@ class ZoomableRuler: UIControl {
                 if let value = maxUnitValue {
                     hasMoreValue = value > (rightValue + screenUnitValue)
                     let rightMoreValue = hasMoreValue ? (rightValue + screenUnitValue) : value
-                    scrollViewContentWidth = minX + (rightMoreValue - uintValue)*pixelPerUnit
+                    scrollViewContentWidth = minX + (rightMoreValue - unitValue)*pixelPerUnit
                     rightValue = rightValue + rightMoreValue
                 } else {
                     scrollViewContentWidth = scrollViewContentWidth + moreDistance
@@ -364,7 +359,7 @@ class ZoomableRuler: UIControl {
         layerMinWidth = scrollViewContentWidth > layerMaxWidth ? layerMaxWidth : scrollViewContentWidth
         scrollViewContentMinWidth = scrollViewContentWidth
 
-        return (CGPoint(x: (uintValue - leftValue)*pixelPerUnit, y: 0), scrollViewContentWidth)
+        return (CGPoint(x: (unitValue - leftValue)*pixelPerUnit, y: 0), scrollViewContentWidth)
     }
 
     /// 加载跟多左边的内容
@@ -455,10 +450,19 @@ class ZoomableRuler: UIControl {
 
         CATransaction.commit()
     }
+
+    /// 按照screenUnitValue来算出给出的值所掉落的时间区间
+    /// - Parameter unitValue: 值
+    /// - Returns: 返回 (左区间, 右区间) 的值
+    private func calculateEdgeValue(withUnitValue unitValue: CGFloat) -> (CGFloat, CGFloat) {
+        let minValue = CGFloat(Int(unitValue/screenUnitValue))*screenUnitValue
+        let maxValue: CGFloat = minValue + screenUnitValue
+        return (minValue, maxValue)
+    }
 }
 
 // MARK: - UIScrollViewDelegate
-extension ZoomableRuler: UIScrollViewDelegate {
+extension ZoomableHorizontalRuler: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         // 保证有Layer
         guard let zoomableLayer = self.zoomableLayer, !pinching else { return }
@@ -468,19 +472,22 @@ extension ZoomableRuler: UIScrollViewDelegate {
         let contentScreenWidth = scrollView.frame.size.width
 
         // 同步当前时间戳
-        centerUintValue = zoomableLayer.centerUnitValue + (contentOffsetX + scrollView.contentInset.left - zoomableLayer.startPoint.x)/pixelPerUnit
-        delegate?.ruler(self, currentCenterValue: Double(centerUintValue))
+        centerUnitValue = zoomableLayer.centerUnitValue + (contentOffsetX + scrollView.contentInset.left - zoomableLayer.startPoint.x)/pixelPerUnit
+        delegate?.ruler(self, currentCenterValue: Double(centerUnitValue))
 
         if contentOffsetX + scrollView.contentInset.left < 0 {
             if hasLessValue {
                 if !requestingLess {
                     requestingLess = true
+                    // 节点的时间必须卡在每一个小时的0s，也就是 0:00/03:00/06:00
+                    let curlessValue = centerUnitValue - contentScreenWidth/2*pixelPerUnit
+                    let (_, moreValue) = calculateEdgeValue(withUnitValue: curlessValue)
                     delegate?.ruler(self, shouldShowMoreInfo: { [weak self] should in
                         self?.requestingLess = false
                         if should {
                             self?.lessToGo()
                         }
-                    }, lessThan: Double(centerUintValue - contentScreenWidth/2*pixelPerUnit))
+                    }, lessThan: Double(moreValue))
                 }
                 return
             } else {
@@ -490,12 +497,15 @@ extension ZoomableRuler: UIScrollViewDelegate {
             if hasMoreValue {
                 if !requestingMore {
                     requestingMore = true
+                    // 节点的时间必须卡在每一个小时的0s，也就是 0:00/03:00/06:00
+                    let curlessValue = centerUnitValue + contentScreenWidth/2*pixelPerUnit
+                    let (lessValue, _) = calculateEdgeValue(withUnitValue: curlessValue)
                     delegate?.ruler(self, shouldShowMoreInfo: { [weak self] should in
                         self?.requestingMore = false
                         if should {
                             self?.moreToGo()
                         }
-                    }, moreThan: Double(centerUintValue + contentScreenWidth/2*pixelPerUnit))
+                    }, moreThan: Double(lessValue))
                 }
                 return
             } else {
@@ -547,19 +557,19 @@ extension ZoomableRuler: UIScrollViewDelegate {
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
         if !decelerate {
             // 用户确定选择的话，不会有 decelerate的
-            delegate?.ruler(self, userDidMoveToValue: Double(centerUintValue))
+            delegate?.ruler(self, userDidMoveToValue: Double(centerUnitValue))
         }
     }
 }
 
-extension ZoomableRuler: ZoomableLayerDataSource {
-    func layerRequestLabelSize(_ layer: ZoomableLayer) -> CGSize {
+extension ZoomableHorizontalRuler: ZoomableHorizontalLayerDataSource {
+    func layerRequestLabelSize(_ layer: ZoomableHorizontalLayer) -> CGSize {
         CGSize(width: labelWidth, height: labelHeight)
     }
 }
 
-extension ZoomableRuler: ZoomableLayerDelegate {
-    func layer(_ layer: ZoomableLayer, didTapAreaID areaID: String) {
+extension ZoomableHorizontalRuler: ZoomableHorizontalLayerDelegate {
+    func layer(_ layer: ZoomableHorizontalLayer, didTapAreaID areaID: String) {
         delegate?.ruler(self, didTapAreaID: areaID)
     }
 }

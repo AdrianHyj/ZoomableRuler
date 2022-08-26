@@ -1,23 +1,23 @@
 //
-//  ZoomableLayer.swift
+//  ZoomableHorizontalLayer.swift
 //  ZoomableRuler
 //
-//  Created by Jin on 2022/7/28.
+//  Created by Jin on 2022/8/25.
 //
 
 import UIKit
 
-protocol ZoomableLayerDataSource: NSObjectProtocol {
+protocol ZoomableHorizontalLayerDataSource: NSObjectProtocol {
     /// 显示文本的宽高
-    func layerRequestLabelSize(_ layer: ZoomableLayer) -> CGSize
+    func layerRequestLabelSize(_ layer: ZoomableHorizontalLayer) -> CGSize
 }
-protocol ZoomableLayerDelegate: NSObjectProtocol {
-    func layer(_ layer: ZoomableLayer, didTapAreaID areaID: String)
+protocol ZoomableHorizontalLayerDelegate: NSObjectProtocol {
+    func layer(_ layer: ZoomableHorizontalLayer, didTapAreaID areaID: String)
 }
 
-class ZoomableLayer: CALayer {
-    weak var dataSource: ZoomableLayerDataSource?
-    weak var zoomableDelegate: ZoomableLayerDelegate?
+class ZoomableHorizontalLayer: CALayer {
+    weak var zoomableDataSource: ZoomableHorizontalLayerDataSource?
+    weak var zoomableDelegate: ZoomableHorizontalLayerDelegate?
 
     /// 初始化时确定不变的第一个居中的值，所处于的坐标，后期会根据layer的frame的变化而做出对应的改变
     var startPoint: CGPoint
@@ -99,7 +99,7 @@ class ZoomableLayer: CALayer {
             // 长刻度
             let longLineHeight: CGFloat = 10
             // text part
-            let timeTextSize = dataSource?.layerRequestLabelSize(self) ?? CGSize.zero
+            let timeTextSize = zoomableDataSource?.layerRequestLabelSize(self) ?? CGSize.zero
 
             if showText {
                 // 通过总长度和当前startpoint的中心值centerUnitValue算出当前的总值跨度是多少
