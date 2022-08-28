@@ -199,6 +199,10 @@ class ZoomableVerticalRuler: UIControl {
     }
 
     private func resetScrollView(withFrame frame: CGRect) {
+        // clean layer
+        zoomableLayer?.removeFromSuperlayer()
+        zoomableLayer = nil
+
         let contentInsetTop = CGFloat(ceil(Double(frame.size.height/2)))
         scrollView.contentInset = UIEdgeInsets(top: contentInsetTop, left: 0, bottom: contentInsetTop, right: 0)
         scrollView.frame = CGRect(x: 0, y: 0, width: frame.size.width, height: frame.size.height)
@@ -222,6 +226,9 @@ class ZoomableVerticalRuler: UIControl {
         zLayer.totalHeight = scrollViewContentHeight
         zLayer.scale = startScale
         zLayer.marginHeight = marginHeight
+
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
         // layer的定位会再layoutSubviews的方法中完成
         zLayer.frame = CGRect(x: 0,
                               y: 0,
@@ -230,6 +237,7 @@ class ZoomableVerticalRuler: UIControl {
 
         scrollView.layer.addSublayer(zLayer)
         zoomableLayer = zLayer
+        CATransaction.commit()
         // layout subview
         setNeedsLayout()
     }

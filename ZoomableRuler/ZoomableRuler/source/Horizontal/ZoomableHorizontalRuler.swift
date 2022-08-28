@@ -198,6 +198,10 @@ class ZoomableHorizontalRuler: UIControl {
     }
 
     private func resetScrollView(withFrame frame: CGRect) {
+        // clean layer
+        zoomableLayer?.removeFromSuperlayer()
+        zoomableLayer = nil
+
         let contentInsetLeft = CGFloat(ceil(Double(frame.size.width/2)))
         scrollView.contentInset = UIEdgeInsets(top: 0, left: contentInsetLeft, bottom: 0, right: contentInsetLeft)
         scrollView.frame = CGRect(x: 0, y: 0, width: frame.size.width, height: frame.size.height)
@@ -221,6 +225,9 @@ class ZoomableHorizontalRuler: UIControl {
         zLayer.totalWidth = scrollViewContentWidth
         zLayer.scale = startScale
         zLayer.marginWidth = marginWidth
+
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
         // layer的定位会再layoutSubviews的方法中完成
         zLayer.frame = CGRect(x: 0,
                               y: 0,
@@ -229,6 +236,7 @@ class ZoomableHorizontalRuler: UIControl {
 
         scrollView.layer.addSublayer(zLayer)
         zoomableLayer = zLayer
+        CATransaction.commit()
         // layout subview
         setNeedsLayout()
     }

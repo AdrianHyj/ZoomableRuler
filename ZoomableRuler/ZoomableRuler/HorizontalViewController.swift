@@ -90,7 +90,7 @@ extension HorizontalViewController: ZoomableHorizontalRulerDelegate {
 
     func ruler(_ ruler: ZoomableHorizontalRuler, shouldShowMoreInfo block: @escaping (Bool) -> (), lessThan unitValue: Double) {
         print("request less value: \(unitValue)")
-        DispatchQueue.main.async {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             block(true)
         }
     }
