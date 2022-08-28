@@ -511,7 +511,7 @@ extension ZoomableVerticalRuler: UIScrollViewDelegate {
 
         if contentOffsetY + contentScreenHeight/2 > zoomableLayer.frame.minY + zoomableLayer.frame.size.height/2 + marginHeight {
             var layerFrame = CGRect(x: 0,
-                                    y: (contentOffsetY + contentScreenHeight/2) - zoomableLayer.frame.size.height/2,
+                                    y: (contentOffsetY + contentScreenHeight) - zoomableLayer.frame.size.height/2,
                                     width: zoomableLayer.frame.width,
                                     height: zoomableLayer.frame.height)
             if layerFrame.maxY - marginHeight*2 > contentSizeHeight {
@@ -530,7 +530,7 @@ extension ZoomableVerticalRuler: UIScrollViewDelegate {
             }
         } else if contentOffsetY + contentScreenHeight/2 < zoomableLayer.frame.minY + marginHeight + zoomableLayer.frame.size.height/(2*3) {
             var layerFrame = CGRect(x: 0,
-                                    y: (contentOffsetY + contentScreenHeight/2) - zoomableLayer.frame.size.height/2,
+                                    y: (contentOffsetY + contentScreenHeight) - zoomableLayer.frame.size.height/2,
                                     width: zoomableLayer.frame.width,
                                     height: zoomableLayer.frame.height)
             if layerFrame.minY - marginHeight < 0 {

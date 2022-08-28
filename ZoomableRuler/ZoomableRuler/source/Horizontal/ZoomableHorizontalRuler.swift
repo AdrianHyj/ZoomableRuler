@@ -514,7 +514,7 @@ extension ZoomableHorizontalRuler: UIScrollViewDelegate {
         }
 
         if contentOffsetX + contentScreenWidth/2 > zoomableLayer.frame.minX + zoomableLayer.frame.size.width/2 + marginWidth {
-            var layerFrame = CGRect(x: (contentOffsetX + contentScreenWidth/2) - zoomableLayer.frame.size.width/2,
+            var layerFrame = CGRect(x: (contentOffsetX + contentScreenWidth) - zoomableLayer.frame.size.width/2,
                                     y: 0,
                                     width: zoomableLayer.frame.width,
                                     height: zoomableLayer.frame.height)
@@ -533,7 +533,7 @@ extension ZoomableHorizontalRuler: UIScrollViewDelegate {
                 CATransaction.commit()
             }
         } else if contentOffsetX + contentScreenWidth/2 < zoomableLayer.frame.minX + marginWidth + zoomableLayer.frame.size.width/(2*3) {
-            var layerFrame = CGRect(x: (contentOffsetX + contentScreenWidth/2) - zoomableLayer.frame.size.width/2,
+            var layerFrame = CGRect(x: (contentOffsetX + contentScreenWidth) - zoomableLayer.frame.size.width/2,
                                     y: 0,
                                     width: zoomableLayer.frame.width,
                                     height: zoomableLayer.frame.height)

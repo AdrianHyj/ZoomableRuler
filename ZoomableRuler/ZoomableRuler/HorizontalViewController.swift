@@ -32,7 +32,7 @@ class HorizontalViewController: UIViewController {
         let zoomableRuler = ZoomableHorizontalRuler(frame: CGRect(x: 0, y: 200, width: view.frame.size.width, height: 180))
         zoomableRuler.delegate = self
         let centerUnitValue: Double = 1659585600.0
-        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659609351.0, minUnitValue: 1659561849.0)
+        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: centerUnitValue, minUnitValue: centerUnitValue - 31*24*3600)
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659592800.0, minUnitValue: 1659578400.0)
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659609351.0, minUnitValue: 1659578400.0)
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659592800.0, minUnitValue: 1659561849.0)
