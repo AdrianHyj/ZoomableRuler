@@ -32,8 +32,9 @@ protocol ZoomableHorizontalRulerDelegate: NSObjectProtocol {
     func ruler(_ ruler: ZoomableHorizontalRuler, userDidMoveToValue unitValue: Double)
     /// 用户拖动了ruler
     func userDidDragRuler(_ ruler: ZoomableHorizontalRuler)
+    /// 请求Area需要的颜色
+    func ruler(_ ruler: ZoomableHorizontalRuler, requestColorWithArea area: ZoomableRulerSelectedArea) -> UIColor
 }
-
 
 class ZoomableHorizontalRuler: UIControl {
 
@@ -581,6 +582,10 @@ extension ZoomableHorizontalRuler: UIScrollViewDelegate {
 }
 
 extension ZoomableHorizontalRuler: ZoomableHorizontalLayerDataSource {
+    func layer(_ layer: ZoomableHorizontalLayer, colorOfArea area: ZoomableRulerSelectedArea) -> UIColor {
+        delegate?.ruler(self, requestColorWithArea: area) ?? .green
+    }
+
     func layerRequestLabelSize(_ layer: ZoomableHorizontalLayer) -> CGSize {
         CGSize(width: labelWidth, height: labelHeight)
     }

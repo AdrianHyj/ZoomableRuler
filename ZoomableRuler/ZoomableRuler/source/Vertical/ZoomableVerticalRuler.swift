@@ -33,6 +33,8 @@ protocol ZoomableVerticalRulerDelegate: NSObjectProtocol {
     func ruler(_ ruler: ZoomableVerticalRuler, userDidMoveToValue unitValue: Double)
     /// 用户拖动了ruler
     func userDidDragRuler(_ ruler: ZoomableVerticalRuler)
+    /// 请求Area需要的颜色
+    func ruler(_ ruler: ZoomableVerticalRuler, requestColorWithArea area: ZoomableRulerSelectedArea) -> UIColor
 }
 
 
@@ -577,6 +579,10 @@ extension ZoomableVerticalRuler: UIScrollViewDelegate {
 }
 
 extension ZoomableVerticalRuler: ZoomableVerticalLayerDataSource {
+    func layer(_ layer: ZoomableVerticalLayer, colorOfArea area: ZoomableRulerSelectedArea) -> UIColor {
+        delegate?.ruler(self, requestColorWithArea: area) ?? .green
+    }
+
     func layerRequestLabelSize(_ layer: ZoomableVerticalLayer) -> CGSize {
         CGSize(width: labelWidth, height: labelHeight)
     }

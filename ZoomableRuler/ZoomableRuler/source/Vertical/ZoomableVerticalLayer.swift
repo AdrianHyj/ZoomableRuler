@@ -10,6 +10,8 @@ import UIKit
 protocol ZoomableVerticalLayerDataSource: NSObjectProtocol {
     /// 显示文本的宽高
     func layerRequestLabelSize(_ layer: ZoomableVerticalLayer) -> CGSize
+    /// 显示选中区域的颜色
+    func layer(_ layer: ZoomableVerticalLayer, colorOfArea area: ZoomableRulerSelectedArea) -> UIColor
 }
 protocol ZoomableVerticalLayerDelegate: NSObjectProtocol {
     func layer(_ layer: ZoomableVerticalLayer, didTapAreaID areaID: String)
@@ -165,13 +167,18 @@ class ZoomableVerticalLayer: CALayer {
                 topValue = centerUnitValue - (startPoint.y - rect.minY)/pixelPerUnit
             }
             let bottomValue = topValue + rect.size.height/pixelPerUnit
-            areaOriginX = longLineWidth + 10 + timeTextSize.width + 5
-            areaLineWidth = (rect.size.width - areaOriginX)/4.0
-            ctx.setFillColor(UIColor.green.cgColor)
+            // 如果显示文字的时候，增加上面刻度的高度
+            areaOriginX = showText ? (longLineWidth + 10 + timeTextSize.width + 5) : 0
+            let lineCount: CGFloat = 4.0
+            let lineSpace: CGFloat = 10.0
+            areaLineWidth = (rect.size.width - areaOriginX - (lineCount-1)*lineSpace)/lineCount
             for i in 0 ..< selectedAreas.count {
                 let lineAreas = selectedAreas[i]
                 var lineFrames: [String: CGRect] = [:]
                 for area in lineAreas {
+                    // 获取显示的颜色
+                    let areaColor = zoomableDataSource?.layer(self, colorOfArea: area) ?? UIColor.green
+                    ctx.setFillColor(areaColor.cgColor)
                     if area.endValue <= topValue {
                         continue
                     }
@@ -179,7 +186,7 @@ class ZoomableVerticalLayer: CALayer {
                         let cut = area.startValue < topValue
                         let headValue = cut ? topValue : area.startValue
                         let tailValue = area.endValue > bottomValue ? bottomValue : area.endValue
-                        let areaRect = CGRect(x: areaOriginX + CGFloat(i)*areaLineWidth,
+                        let areaRect = CGRect(x: areaOriginX + CGFloat(i)*(areaLineWidth+lineSpace),
                                               y: (headValue - topValue)*pixelPerUnit,
                                               width: areaLineWidth,
                                               height: (tailValue - headValue)*pixelPerUnit)
@@ -190,10 +197,20 @@ class ZoomableVerticalLayer: CALayer {
                         ctx.closePath()
                         ctx.drawPath(using: .fill)
                         lineFrames[area.id] = areaRect
+                        //如果圆角都不够就不用画图片了
+                        if let image = area.icon {
+                            let imageScale = image.size.width/image.size.height
+                            let imageRealHeight = areaRect.width/imageScale
+                            if imageRealHeight <= areaRect.height {
+                                image.draw(in: CGRect(x: areaRect.origin.x, y: areaRect.origin.y, width: areaRect.width, height: imageRealHeight),
+                                           blendMode: .normal,
+                                           alpha: 1)
+                            }
+                        }
                     } else if area.startValue < bottomValue {
                         let cut = area.endValue > bottomValue
                         let tailValue = cut ? bottomValue : area.endValue
-                        let areaRect = CGRect(x: areaOriginX + CGFloat(i)*areaLineWidth,
+                        let areaRect = CGRect(x: areaOriginX + CGFloat(i)*(areaLineWidth+lineSpace),
                                               y: rect.size.height - (tailValue - area.startValue)/pixelPerUnit,
                                               width: areaLineWidth,
                                               height: (tailValue - area.startValue)/pixelPerUnit)
@@ -204,6 +221,16 @@ class ZoomableVerticalLayer: CALayer {
                         ctx.closePath()
                         ctx.drawPath(using: .fill)
                         lineFrames[area.id] = areaRect
+                        //如果圆角都不够就不用画图片了
+                        if let image = area.icon {
+                            let imageScale = image.size.width/image.size.height
+                            let imageRealHeight = areaRect.width/imageScale
+                            if imageRealHeight <= areaRect.height {
+                                image.draw(in: CGRect(x: areaRect.origin.x, y: areaRect.origin.y, width: areaRect.width, height: imageRealHeight),
+                                           blendMode: .normal,
+                                           alpha: 1)
+                            }
+                        }
                     } else if area.startValue >= bottomValue {
                         break
                     }

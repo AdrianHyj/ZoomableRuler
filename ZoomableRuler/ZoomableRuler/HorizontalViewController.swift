@@ -41,10 +41,10 @@ class HorizontalViewController: UIViewController {
 //        let centerUnitValue: Double = 1660276800.0
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1660298767.0, minUnitValue: 1657620367.0)
 
-        zoomableRuler.selectedAreas = [[.init(id: "1", startValue: 1659585600 - 25*15, endValue: 1659585600 - 24*15),
-                                        .init(id: "2", startValue: 1659585600 - 15*10, endValue: 1659585600 - 15*9),
-                                        .init(id: "3", startValue: 1659585600 - 15*6, endValue: 1659585600 - 15*4),
-                                        .init(id: "4", startValue: 1659585600 - 5, endValue: 1659585600 + 10)],
+        zoomableRuler.selectedAreas = [[.init(id: "1", startValue: 1659585600 - 25*15, endValue: 1659585600 - 24*15, icon: UIImage(named: "motion_timeline_icon")),
+                                        .init(id: "2", startValue: 1659585600 - 15*10, endValue: 1659585600 - 15*9, icon: UIImage(named: "motion_timeline_icon")),
+                                        .init(id: "3", startValue: 1659585600 - 15*6, endValue: 1659585600 - 15*4, icon: UIImage(named: "motion_timeline_icon")),
+                                        .init(id: "4", startValue: 1659585600 - 5, endValue: 1659585600 + 10, icon: UIImage(named: "motion_timeline_icon"))],
                                        [.init(id: "5", startValue: 1659585600 - 15*30, endValue: 1659585600 - 15*19),
                                         .init(id: "6", startValue: 1659585600 - 15*15, endValue: 1659585600 - 15*14),
                                         .init(id: "7", startValue: 1659585600 - 15*12, endValue: 1659585600 - 15*11),
@@ -80,6 +80,14 @@ class HorizontalViewController: UIViewController {
 }
 
 extension HorizontalViewController: ZoomableHorizontalRulerDelegate {
+    func ruler(_ ruler: ZoomableHorizontalRuler, requestColorWithArea area: ZoomableRulerSelectedArea) -> UIColor {
+        .green
+    }
+
+    func userDidDragRuler(_ ruler: ZoomableHorizontalRuler) {
+        //
+    }
+
     func rulerReachMinimumValue(_ ruler: ZoomableHorizontalRuler) {
 //        print("rulerReachMinimumValue")
     }

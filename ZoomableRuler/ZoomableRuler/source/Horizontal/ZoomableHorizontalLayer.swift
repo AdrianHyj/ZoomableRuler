@@ -10,6 +10,8 @@ import UIKit
 protocol ZoomableHorizontalLayerDataSource: NSObjectProtocol {
     /// 显示文本的宽高
     func layerRequestLabelSize(_ layer: ZoomableHorizontalLayer) -> CGSize
+    /// 显示选中区域的颜色
+    func layer(_ layer: ZoomableHorizontalLayer, colorOfArea area: ZoomableRulerSelectedArea) -> UIColor
 }
 protocol ZoomableHorizontalLayerDelegate: NSObjectProtocol {
     func layer(_ layer: ZoomableHorizontalLayer, didTapAreaID areaID: String)
@@ -162,13 +164,18 @@ class ZoomableHorizontalLayer: CALayer {
                 leftValue = centerUnitValue - (startPoint.x - rect.minX)/pixelPerUnit
             }
             let rightValue = leftValue + rect.size.width/pixelPerUnit
-            areaOriginY = longLineHeight + 10 + timeTextSize.height + 5
-            areaLineHeight = (rect.size.height - areaOriginY)/4.0
-            ctx.setFillColor(UIColor.green.cgColor)
+            // 如果显示文字的时候，增加上面刻度的高度
+            areaOriginY = showText ? (longLineHeight + 10 + timeTextSize.height + 5) : 0
+            let lineCount: CGFloat = 4.0
+            let lineSpace: CGFloat = 10.0
+            areaLineHeight = (rect.size.height - areaOriginY - (lineCount-1)*lineSpace)/lineCount
             for i in 0 ..< selectedAreas.count {
                 let lineAreas = selectedAreas[i]
                 var lineFrames: [String: CGRect] = [:]
                 for area in lineAreas {
+                    // 获取显示的颜色
+                    let areaColor = zoomableDataSource?.layer(self, colorOfArea: area) ?? UIColor.green
+                    ctx.setFillColor(areaColor.cgColor)
                     if area.endValue <= leftValue {
                         continue
                     }
@@ -177,7 +184,7 @@ class ZoomableHorizontalLayer: CALayer {
                         let headValue = cut ? leftValue : area.startValue
                         let tailValue = area.endValue > rightValue ? rightValue : area.endValue
                         let areaRect = CGRect(x: (headValue - leftValue)*pixelPerUnit,
-                                              y: areaOriginY + CGFloat(i)*areaLineHeight,
+                                              y: areaOriginY + CGFloat(i)*(areaLineHeight+lineSpace),
                                               width: (tailValue - headValue)*pixelPerUnit,
                                               height: areaLineHeight)
                         let areaPath = UIBezierPath(roundedRect: areaRect,
@@ -187,11 +194,21 @@ class ZoomableHorizontalLayer: CALayer {
                         ctx.closePath()
                         ctx.drawPath(using: .fill)
                         lineFrames[area.id] = areaRect
+                        //如果圆角都不够就不用画图片了
+                        if let image = area.icon {
+                            let imageScale = image.size.width/image.size.height
+                            let imageRealWidth = areaRect.height*imageScale
+                            if imageRealWidth <= areaRect.width {
+                                image.draw(in: CGRect(x: areaRect.origin.x, y: areaRect.origin.y, width: imageRealWidth, height: areaRect.height),
+                                           blendMode: .normal,
+                                           alpha: 1)
+                            }
+                        }
                     } else if area.startValue < rightValue {
                         let cut = area.endValue > rightValue
                         let tailValue = cut ? rightValue : area.endValue
                         let areaRect = CGRect(x: rect.size.width - (tailValue - area.startValue)/pixelPerUnit,
-                                              y: areaOriginY + CGFloat(i)*areaLineHeight,
+                                              y: areaOriginY + CGFloat(i)*(areaLineHeight+lineSpace),
                                               width: (tailValue - area.startValue)/pixelPerUnit,
                                               height: areaLineHeight)
                         let areaPath = UIBezierPath(roundedRect: areaRect,
@@ -201,6 +218,16 @@ class ZoomableHorizontalLayer: CALayer {
                         ctx.closePath()
                         ctx.drawPath(using: .fill)
                         lineFrames[area.id] = areaRect
+                        //如果圆角都不够就不用画图片了
+                        if let image = area.icon {
+                            let imageScale = image.size.width/image.size.height
+                            let imageRealWidth = areaRect.height*imageScale
+                            if imageRealWidth <= areaRect.width {
+                                image.draw(in: CGRect(x: areaRect.origin.x, y: areaRect.origin.y, width: imageRealWidth, height: areaRect.height),
+                                           blendMode: .normal,
+                                           alpha: 1)
+                            }
+                        }
                     } else if area.startValue >= rightValue {
                         break
                     }
