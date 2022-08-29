@@ -31,6 +31,8 @@ protocol ZoomableVerticalRulerDelegate: NSObjectProtocol {
     func ruler(_ ruler: ZoomableVerticalRuler, didTapAreaID areaID: String)
     /// 用户拖动到的值
     func ruler(_ ruler: ZoomableVerticalRuler, userDidMoveToValue unitValue: Double)
+    /// 用户拖动了ruler
+    func userDidDragRuler(_ ruler: ZoomableVerticalRuler)
 }
 
 
@@ -234,10 +236,9 @@ class ZoomableVerticalRuler: UIControl {
                               y: 0,
                               width: scrollView.frame.size.width,
                               height: (scrollViewContentHeight > layerMaxHeight ? layerMaxHeight : scrollViewContentHeight) + marginHeight*2)
-
+        CATransaction.commit()
         scrollView.layer.addSublayer(zLayer)
         zoomableLayer = zLayer
-        CATransaction.commit()
         // layout subview
         setNeedsLayout()
     }
@@ -294,8 +295,13 @@ class ZoomableVerticalRuler: UIControl {
         // 更新layer 的frame
         zLayer.frame = layerFrame
 
+        // 同步当前时间戳
+        let scrollViewOffsetY = (scrollView.contentOffset.y + offset)*scale - offset
+        centerUnitValue = zLayer.centerUnitValue + (scrollViewOffsetY + scrollView.contentInset.top - zLayer.startPoint.y)/pixelPerUnit
+        delegate?.ruler(self, currentCenterValue: Double(centerUnitValue))
+
         scrollView.contentOffset = CGPoint(x: scrollView.contentOffset.x,
-                                           y: (scrollView.contentOffset.y + offset)*scale - offset)
+                                           y: scrollViewOffsetY)
 
         scrollView.contentSize = CGSize(width: scrollView.contentSize.width,
                                         height:  zLayer.totalHeight)
@@ -556,6 +562,10 @@ extension ZoomableVerticalRuler: UIScrollViewDelegate {
                 CATransaction.commit()
             }
         }
+    }
+
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        delegate?.userDidDragRuler(self)
     }
 
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {

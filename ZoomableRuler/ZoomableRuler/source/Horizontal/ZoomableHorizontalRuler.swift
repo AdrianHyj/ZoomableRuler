@@ -30,6 +30,8 @@ protocol ZoomableHorizontalRulerDelegate: NSObjectProtocol {
     func ruler(_ ruler: ZoomableHorizontalRuler, didTapAreaID areaID: String)
     /// 用户拖动到的值
     func ruler(_ ruler: ZoomableHorizontalRuler, userDidMoveToValue unitValue: Double)
+    /// 用户拖动了ruler
+    func userDidDragRuler(_ ruler: ZoomableHorizontalRuler)
 }
 
 
@@ -233,10 +235,9 @@ class ZoomableHorizontalRuler: UIControl {
                               y: 0,
                               width: (scrollViewContentWidth > layerMaxWidth ? layerMaxWidth : scrollViewContentWidth) + marginWidth*2,
                               height: scrollView.frame.size.height)
-
+        CATransaction.commit()
         scrollView.layer.addSublayer(zLayer)
         zoomableLayer = zLayer
-        CATransaction.commit()
         // layout subview
         setNeedsLayout()
     }
@@ -298,7 +299,12 @@ class ZoomableHorizontalRuler: UIControl {
         // 更新layer 的frame
         zLayer.frame = layerFrame
 
-        scrollView.contentOffset = CGPoint(x: (scrollView.contentOffset.x + offset)*scale - offset,
+        // 同步当前时间戳
+        let scrollViewOffsetX = (scrollView.contentOffset.x + offset)*scale - offset
+        centerUnitValue = zLayer.centerUnitValue + (scrollViewOffsetX + scrollView.contentInset.left - zLayer.startPoint.x)/pixelPerUnit
+        delegate?.ruler(self, currentCenterValue: Double(centerUnitValue))
+
+        scrollView.contentOffset = CGPoint(x: scrollViewOffsetX,
                                            y: scrollView.contentOffset.y)
 
         scrollView.contentSize = CGSize(width: zLayer.totalWidth,
@@ -560,6 +566,10 @@ extension ZoomableHorizontalRuler: UIScrollViewDelegate {
                 CATransaction.commit()
             }
         }
+    }
+
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        delegate?.userDidDragRuler(self)
     }
 
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
