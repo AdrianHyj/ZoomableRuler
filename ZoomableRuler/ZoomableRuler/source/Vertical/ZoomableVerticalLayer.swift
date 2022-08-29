@@ -40,6 +40,8 @@ class ZoomableVerticalLayer: CALayer {
     var areaOriginX: CGFloat = 0
     // 每一个区域的宽度
     var areaLineWidth: CGFloat = 0
+    // 每一个区域的间隔
+    let areaSpace: CGFloat = 10.0
 
     /// 是否显示值刻度
     var showText: Bool = true
@@ -170,8 +172,7 @@ class ZoomableVerticalLayer: CALayer {
             // 如果显示文字的时候，增加上面刻度的高度
             areaOriginX = showText ? (longLineWidth + 10 + timeTextSize.width + 5) : 0
             let lineCount: CGFloat = 4.0
-            let lineSpace: CGFloat = 10.0
-            areaLineWidth = (rect.size.width - areaOriginX - (lineCount-1)*lineSpace)/lineCount
+            areaLineWidth = (rect.size.width - areaOriginX - (lineCount-1)*areaSpace)/lineCount
             for i in 0 ..< selectedAreas.count {
                 let lineAreas = selectedAreas[i]
                 var lineFrames: [String: CGRect] = [:]
@@ -186,7 +187,7 @@ class ZoomableVerticalLayer: CALayer {
                         let cut = area.startValue < topValue
                         let headValue = cut ? topValue : area.startValue
                         let tailValue = area.endValue > bottomValue ? bottomValue : area.endValue
-                        let areaRect = CGRect(x: areaOriginX + CGFloat(i)*(areaLineWidth+lineSpace),
+                        let areaRect = CGRect(x: areaOriginX + CGFloat(i)*(areaLineWidth+areaSpace),
                                               y: (headValue - topValue)*pixelPerUnit,
                                               width: areaLineWidth,
                                               height: (tailValue - headValue)*pixelPerUnit)
@@ -210,7 +211,7 @@ class ZoomableVerticalLayer: CALayer {
                     } else if area.startValue < bottomValue {
                         let cut = area.endValue > bottomValue
                         let tailValue = cut ? bottomValue : area.endValue
-                        let areaRect = CGRect(x: areaOriginX + CGFloat(i)*(areaLineWidth+lineSpace),
+                        let areaRect = CGRect(x: areaOriginX + CGFloat(i)*(areaLineWidth+areaSpace),
                                               y: rect.size.height - (tailValue - area.startValue)/pixelPerUnit,
                                               width: areaLineWidth,
                                               height: (tailValue - area.startValue)/pixelPerUnit)
@@ -249,7 +250,7 @@ class ZoomableVerticalLayer: CALayer {
 
     override func contains(_ p: CGPoint) -> Bool {
         guard p.x > areaOriginX else { return true}
-        let lineIndex = Int(ceil(Double((p.x - areaOriginX)/areaLineWidth))) - 1
+        let lineIndex = Int(ceil(Double((p.x - areaOriginX)/(areaLineWidth+areaSpace)))) - 1
         guard lineIndex < visiableFrames.count else { return true }
         let lineFrames = visiableFrames[lineIndex]
         for lineFramesID in lineFrames.keys {

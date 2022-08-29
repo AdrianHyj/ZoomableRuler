@@ -40,6 +40,8 @@ class ZoomableHorizontalLayer: CALayer {
     var areaOriginY: CGFloat = 0
     // 每一个区域的高度
     var areaLineHeight: CGFloat = 0
+    // 每一个区域的间隔
+    let areaSpace: CGFloat = 10.0
 
     /// 是否显示值刻度
     var showText: Bool = true
@@ -167,8 +169,7 @@ class ZoomableHorizontalLayer: CALayer {
             // 如果显示文字的时候，增加上面刻度的高度
             areaOriginY = showText ? (longLineHeight + 10 + timeTextSize.height + 5) : 0
             let lineCount: CGFloat = 4.0
-            let lineSpace: CGFloat = 10.0
-            areaLineHeight = (rect.size.height - areaOriginY - (lineCount-1)*lineSpace)/lineCount
+            areaLineHeight = (rect.size.height - areaOriginY - (lineCount-1)*areaSpace)/lineCount
             for i in 0 ..< selectedAreas.count {
                 let lineAreas = selectedAreas[i]
                 var lineFrames: [String: CGRect] = [:]
@@ -184,7 +185,7 @@ class ZoomableHorizontalLayer: CALayer {
                         let headValue = cut ? leftValue : area.startValue
                         let tailValue = area.endValue > rightValue ? rightValue : area.endValue
                         let areaRect = CGRect(x: (headValue - leftValue)*pixelPerUnit,
-                                              y: areaOriginY + CGFloat(i)*(areaLineHeight+lineSpace),
+                                              y: areaOriginY + CGFloat(i)*(areaLineHeight+areaSpace),
                                               width: (tailValue - headValue)*pixelPerUnit,
                                               height: areaLineHeight)
                         let areaPath = UIBezierPath(roundedRect: areaRect,
@@ -208,7 +209,7 @@ class ZoomableHorizontalLayer: CALayer {
                         let cut = area.endValue > rightValue
                         let tailValue = cut ? rightValue : area.endValue
                         let areaRect = CGRect(x: rect.size.width - (tailValue - area.startValue)/pixelPerUnit,
-                                              y: areaOriginY + CGFloat(i)*(areaLineHeight+lineSpace),
+                                              y: areaOriginY + CGFloat(i)*(areaLineHeight+areaSpace),
                                               width: (tailValue - area.startValue)/pixelPerUnit,
                                               height: areaLineHeight)
                         let areaPath = UIBezierPath(roundedRect: areaRect,
@@ -246,7 +247,7 @@ class ZoomableHorizontalLayer: CALayer {
 
     override func contains(_ p: CGPoint) -> Bool {
         guard p.y > areaOriginY else { return true}
-        let lineIndex = Int(ceil(Double((p.y - areaOriginY)/areaLineHeight))) - 1
+        let lineIndex = Int(ceil(Double((p.y - areaOriginY)/(areaLineHeight+areaSpace)))) - 1
         guard lineIndex < visiableFrames.count else { return true }
         let lineFrames = visiableFrames[lineIndex]
         for lineFramesID in lineFrames.keys {
