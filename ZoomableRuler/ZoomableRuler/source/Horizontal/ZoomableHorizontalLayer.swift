@@ -177,60 +177,79 @@ class ZoomableHorizontalLayer: CALayer {
                     // 获取显示的颜色
                     let areaColor = zoomableDataSource?.layer(self, colorOfArea: area) ?? UIColor.green
                     ctx.setFillColor(areaColor.cgColor)
+//                    print("0 - \(rect) - \(pixelPerUnit)")
+                    // 这里if else 的顺序是有讲究的，前者不被后者包含
+                    // 例如 area.startValue < bottomValue && area.endValue > bottomValue 是 area.startValue < topValue && area.endValue > bottomValue 和 area.startValue < bottomValue && area.endValue > bottomValue 的父集，所以排到前面
+                    // ！！！！！千万不要打乱顺序了！！！！！！
+                    var rectCorner: UIRectCorner?
+                    var areaRect: CGRect?
                     if area.endValue <= leftValue {
+                        // 不在范围内不需要画
                         continue
-                    }
-                    else if area.endValue > leftValue {
-                        let cut = area.startValue < leftValue
-                        let headValue = cut ? leftValue : area.startValue
-                        let tailValue = area.endValue > rightValue ? rightValue : area.endValue
-                        let areaRect = CGRect(x: (headValue - leftValue)*pixelPerUnit,
-                                              y: areaOriginY + CGFloat(i)*(areaLineHeight+areaSpace),
-                                              width: (tailValue - headValue)*pixelPerUnit,
-                                              height: areaLineHeight)
-                        let areaPath = UIBezierPath(roundedRect: areaRect,
-                                                    byRoundingCorners: (cut ? [.topRight, .bottomRight] : .allCorners),
-                                                    cornerRadii: CGSize(width: areaLineHeight/2, height: areaLineHeight/2))
-                        ctx.addPath(areaPath.cgPath)
-                        ctx.closePath()
-                        ctx.drawPath(using: .fill)
-                        lineFrames[area.id] = areaRect
-                        //如果圆角都不够就不用画图片了
-                        if let image = area.icon {
-                            let imageScale = image.size.width/image.size.height
-                            let imageRealWidth = areaRect.height*imageScale
-                            if imageRealWidth <= areaRect.width {
-                                image.draw(in: CGRect(x: areaRect.origin.x, y: areaRect.origin.y, width: imageRealWidth, height: areaRect.height),
-                                           blendMode: .normal,
-                                           alpha: 1)
-                            }
-                        }
-                    } else if area.startValue < rightValue {
-                        let cut = area.endValue > rightValue
-                        let tailValue = cut ? rightValue : area.endValue
-                        let areaRect = CGRect(x: rect.size.width - (tailValue - area.startValue)/pixelPerUnit,
-                                              y: areaOriginY + CGFloat(i)*(areaLineHeight+areaSpace),
-                                              width: (tailValue - area.startValue)/pixelPerUnit,
-                                              height: areaLineHeight)
-                        let areaPath = UIBezierPath(roundedRect: areaRect,
-                                                    byRoundingCorners: (cut ? [.topLeft, .bottomLeft] : .allCorners),
-                                                    cornerRadii: CGSize(width: areaLineHeight/2, height: areaLineHeight/2))
-                        ctx.addPath(areaPath.cgPath)
-                        ctx.closePath()
-                        ctx.drawPath(using: .fill)
-                        lineFrames[area.id] = areaRect
-                        //如果圆角都不够就不用画图片了
-                        if let image = area.icon {
-                            let imageScale = image.size.width/image.size.height
-                            let imageRealWidth = areaRect.height*imageScale
-                            if imageRealWidth <= areaRect.width {
-                                image.draw(in: CGRect(x: areaRect.origin.x, y: areaRect.origin.y, width: imageRealWidth, height: areaRect.height),
-                                           blendMode: .normal,
-                                           alpha: 1)
-                            }
-                        }
                     } else if area.startValue >= rightValue {
-                        break
+                        // 不在范围内不需要画
+                        continue
+                    } else if area.startValue < leftValue && area.endValue > rightValue {
+                        areaRect = CGRect(x: 0,
+                                          y: areaOriginY + CGFloat(i)*(areaLineHeight+areaSpace),
+                                          width: (rightValue - leftValue)*pixelPerUnit,
+                                          height: areaLineHeight)
+//                        print("1 - \(areaRect) - \(area.startValue):\(area.endValue) - \(leftValue):\(rightValue)")
+                    } else if area.startValue < leftValue && area.endValue > leftValue {
+                        rectCorner = [.topRight, .bottomRight]
+                        let tailValue = area.endValue > rightValue ? rightValue : area.endValue
+                        areaRect = CGRect(x: 0,
+                                              y: areaOriginY + CGFloat(i)*(areaLineHeight+areaSpace),
+                                              width: (tailValue - leftValue)*pixelPerUnit,
+                                              height: areaLineHeight)
+//                        print("2 - \(areaRect) - \(area.startValue):\(area.endValue) - \(leftValue):\(rightValue)")
+                    } else if area.startValue < rightValue && area.endValue > rightValue {
+                        rectCorner = [.topLeft, .bottomLeft]
+                        areaRect = CGRect(x: rect.size.width - (rightValue - area.startValue)*pixelPerUnit,
+                                          y: areaOriginY + CGFloat(i)*(areaLineHeight+areaSpace),
+                                          width: (rightValue - area.startValue)*pixelPerUnit,
+                                          height: areaLineHeight)
+//                        print("3 - \(areaRect) - \(area.startValue):\(area.endValue) - \(leftValue):\(rightValue)")
+                    } else if area.startValue > leftValue && area.endValue < rightValue {
+                        rectCorner = .allCorners
+                        areaRect = CGRect(x: (area.startValue - leftValue)*pixelPerUnit,
+                                              y: areaOriginY + CGFloat(i)*(areaLineHeight+areaSpace),
+                                              width: (area.endValue - area.startValue)*pixelPerUnit,
+                                              height: areaLineHeight)
+//                        print("4 - \(areaRect) - \(area.startValue):\(area.endValue) - \(leftValue):\(rightValue)")
+                    }
+
+                    var areaPath: UIBezierPath?
+                    if let areaRect = areaRect {
+                        if let rectCorner = rectCorner {
+                            areaPath = UIBezierPath(roundedRect: areaRect,
+                                                    byRoundingCorners: rectCorner,
+                                                    cornerRadii: CGSize(width: areaLineHeight/2, height: areaLineHeight/2))
+                        } else {
+                            areaPath = UIBezierPath(rect: areaRect)
+                        }
+                    }
+
+                    if let areaPath = areaPath {
+                        ctx.addPath(areaPath.cgPath)
+                        ctx.closePath()
+                        ctx.drawPath(using: .fill)
+                        lineFrames[area.id] = areaRect
+
+                        //如果圆角都不够就不用画图片了
+                        if let areaRect = areaRect, let image = area.icon {
+                            let imageScale = image.size.width/image.size.height
+                            let imageRealWidth = areaRect.height*imageScale
+                            let iconOffset = (area.startValue - leftValue)*pixelPerUnit
+                            if imageRealWidth <= areaRect.width, iconOffset > -imageRealWidth {
+                                image.draw(in: CGRect(x: areaRect.origin.x + (iconOffset > 0 ? 0 :iconOffset ),
+                                                      y: areaRect.origin.y,
+                                                      width: imageRealWidth,
+                                                      height: areaRect.height),
+                                           blendMode: .normal,
+                                           alpha: 1)
+                            }
+                        }
                     }
                 }
                 visiableFrames.append(lineFrames)
