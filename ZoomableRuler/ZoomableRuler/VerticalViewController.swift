@@ -59,7 +59,7 @@ class VerticalViewController: UIViewController {
                                         .init(id: "11", startValue: 1659585600 + 15*15, endValue: 1659585600 + 15*30),
                                         .init(id: "12", startValue: 1659585600 + 15*139, endValue: 1659585600 + 15*140),
                                         .init(id: "13", startValue: 1659585600 + 15*150, endValue: 1659585600 + 15*170),
-                                        .init(id: "14", startValue: 1659585600 + 15*200, endValue: 1659585600 + 15*300)],
+                                        .init(id: "14", startValue: 1659585600 + 15*200, endValue: 1659585600 + 15*300, icon: UIImage(named: "motion_timeline_icon"))],
                                        [.init(id: "15", startValue: 1659609351 - 15*30, endValue: 1659609351 - 15*19),
                                         .init(id: "16", startValue: 1659609351 - 15*15, endValue: 1659609351 - 15*14),
                                         .init(id: "17", startValue: 1659609351 - 15*12, endValue: 1659609351 - 15*11),
@@ -94,6 +94,7 @@ extension VerticalViewController: ZoomableVerticalRulerDelegate {
     }
 
     func ruler(_ ruler: ZoomableVerticalRuler, currentCenterValue unitValue: Double) {
+        print("aaa ---> \(unitValue)")
         centerTitleLabel.text = formatter.string(from: Date(timeIntervalSince1970: Double(unitValue)))
     }
 

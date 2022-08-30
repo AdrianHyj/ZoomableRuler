@@ -192,7 +192,8 @@ class ZoomableVerticalRuler: UIControl {
 
     func scrollToTime(_ timestamp: Double) {
         guard let zLayer = zoomableLayer else { return }
-        let timePoint = CGPoint(x: 0, y: zLayer.startPoint.y + (timestamp - zLayer.centerUnitValue)*pixelPerUnit)
+        let timePoint = CGPoint(x: 0,
+                                y: zLayer.startPoint.y - scrollView.frame.size.height/2 + (timestamp - zLayer.centerUnitValue)*pixelPerUnit)
         // 如果需求的点在当前scrollview的范围之外
         if (timePoint.y < -zLayer.startPoint.y + scrollView.contentInset.top) || (timePoint.y > scrollView.contentSize.height) {
             centerUnitValue = timestamp

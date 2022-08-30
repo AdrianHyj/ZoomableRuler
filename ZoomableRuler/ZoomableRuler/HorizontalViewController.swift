@@ -32,7 +32,7 @@ class HorizontalViewController: UIViewController {
         let zoomableRuler = ZoomableHorizontalRuler(frame: CGRect(x: 0, y: 200, width: view.frame.size.width, height: 180))
         zoomableRuler.delegate = self
         let centerUnitValue: Double = 1659585600.0
-        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: centerUnitValue, minUnitValue: centerUnitValue - 31*24*3600)
+        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659609351.0, minUnitValue: 1659561849.0)
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659592800.0, minUnitValue: 1659578400.0)
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659609351.0, minUnitValue: 1659578400.0)
 //        zoomableRuler.setCenterUnitValue(centerUnitValue, maxUnitValue: 1659592800.0, minUnitValue: 1659561849.0)
@@ -44,7 +44,7 @@ class HorizontalViewController: UIViewController {
         zoomableRuler.selectedAreas = [[.init(id: "1", startValue: 1659585600 - 25*15, endValue: 1659585600 - 24*15, icon: UIImage(named: "motion_timeline_icon")),
                                         .init(id: "2", startValue: 1659585600 - 15*10, endValue: 1659585600 - 15*9, icon: UIImage(named: "motion_timeline_icon")),
                                         .init(id: "3", startValue: 1659585600 - 15*6, endValue: 1659585600 - 15*4, icon: UIImage(named: "motion_timeline_icon")),
-                                        .init(id: "4", startValue: 1659585600 - 5, endValue: 1659585600 + 10, icon: UIImage(named: "motion_timeline_icon"))],
+                                        .init(id: "4", startValue: 1659561849 - 5, endValue: 1659561849 + 10, icon: UIImage(named: "motion_timeline_icon"))],
                                        [.init(id: "5", startValue: 1659585600 - 15*30, endValue: 1659585600 - 15*19),
                                         .init(id: "6", startValue: 1659585600 - 15*15, endValue: 1659585600 - 15*14),
                                         .init(id: "7", startValue: 1659585600 - 15*12, endValue: 1659585600 - 15*11),
@@ -54,12 +54,12 @@ class HorizontalViewController: UIViewController {
                                         .init(id: "11", startValue: 1659585600 + 15*15, endValue: 1659585600 + 15*30),
                                         .init(id: "12", startValue: 1659585600 + 15*139, endValue: 1659585600 + 15*140),
                                         .init(id: "13", startValue: 1659585600 + 15*150, endValue: 1659585600 + 15*170),
-                                        .init(id: "14", startValue: 1659585600 + 15*200, endValue: 1659585600 + 15*300)],
+                                        .init(id: "14", startValue: 1659585600 + 15*200, endValue: 1659585600 + 15*300, icon: UIImage(named: "motion_timeline_icon"))],
                                        [.init(id: "15", startValue: 1659609351 - 15*30, endValue: 1659609351 - 15*19),
                                         .init(id: "16", startValue: 1659609351 - 15*15, endValue: 1659609351 - 15*14),
                                         .init(id: "17", startValue: 1659609351 - 15*12, endValue: 1659609351 - 15*11),
                                         .init(id: "18", startValue: 1659609351 - 15*9, endValue: 1659609351 - 15*6),
-                                        .init(id: "19", startValue: 1659609351 - 5, endValue: 1659609351 + 10)]]
+                                        .init(id: "19", startValue: 1659609351 + 15*2, endValue: 1659609351 + 15*10)]]
 
         view.addSubview(zoomableRuler)
         ruler = zoomableRuler
