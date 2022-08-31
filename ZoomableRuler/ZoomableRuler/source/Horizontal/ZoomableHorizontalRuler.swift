@@ -36,7 +36,8 @@ protocol ZoomableHorizontalRulerDelegate: NSObjectProtocol {
     func ruler(_ ruler: ZoomableHorizontalRuler, requestColorWithArea area: ZoomableRulerSelectedArea) -> UIColor
 }
 
-class ZoomableHorizontalRuler: UIControl {
+// (某个需求需要使用KVO)
+@objcMembers class ZoomableHorizontalRuler: UIControl {
 
     weak var delegate: ZoomableHorizontalRulerDelegate?
 
@@ -52,8 +53,8 @@ class ZoomableHorizontalRuler: UIControl {
     /// 是否还有更大的值范围等待加载
     var hasMoreValue: Bool = true
 
-    /// 缩放时初始比例
-    var startScale: CGFloat = 1
+    /// 缩放时初始比例 (某个需求需要使用KVO)
+    dynamic var startScale: CGFloat = 1
     /// 缩放时上一刻的比例
     var preScale: CGFloat = 1
   /// 用户piching的比例
@@ -188,12 +189,12 @@ class ZoomableHorizontalRuler: UIControl {
         let _ = zoomableLayer.contains(layerPoint)
     }
 
-    func scrollToTime(_ timestamp: Double) {
+    func scrollToTime(_ timestamp: Double, forceRefresh: Bool = false) {
         guard let zLayer = zoomableLayer else { return }
         let timePoint = CGPoint(x: zLayer.startPoint.x - scrollView.frame.size.width/2 + (timestamp - zLayer.centerUnitValue)*pixelPerUnit,
                                 y: 0)
         // 如果需求的点在当前scrollview的范围之外
-        if (timePoint.x < -zLayer.startPoint.x + scrollView.contentInset.left) || (timePoint.x > scrollView.contentSize.width) {
+        if forceRefresh || (timePoint.x < -zLayer.startPoint.x + scrollView.contentInset.left) || (timePoint.x > scrollView.contentSize.width) {
             centerUnitValue = timestamp
             resetScrollView(withFrame: frame)
         } else {
