@@ -190,6 +190,15 @@ protocol ZoomableVerticalRulerDelegate: NSObjectProtocol {
         let _ = zoomableLayer.contains(layerPoint)
     }
 
+    func refreshLayer() {
+        guard let zLayer = zoomableLayer else { return }
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        // layer的定位会再layoutSubviews的方法中完成
+        zLayer.frame = zLayer.frame
+        CATransaction.commit()
+    }
+
     func scrollToTime(_ timestamp: Double, forceRefresh: Bool = false) {
         guard let zLayer = zoomableLayer else { return }
         let timePoint = CGPoint(x: 0,
