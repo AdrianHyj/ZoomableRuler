@@ -11,10 +11,10 @@ protocol ZoomableVerticalLayerDataSource: NSObjectProtocol {
     /// 显示文本的宽高
     func layerRequestLabelSize(_ layer: ZoomableVerticalLayer) -> CGSize
     /// 显示选中区域的颜色
-    func layer(_ layer: ZoomableVerticalLayer, colorOfArea area: ZoomableRulerSelectedArea) -> UIColor
+    func layer(_ layer: ZoomableVerticalLayer, colorOfArea area: ZoomableRuler.SelectedArea) -> UIColor
 }
 protocol ZoomableVerticalLayerDelegate: NSObjectProtocol {
-    func layer(_ layer: ZoomableVerticalLayer, didTapAreaID areaID: String)
+    func layer(_ layer: ZoomableVerticalLayer, areaID: String, withAction action: ZoomableRuler.AreaAction)
 }
 
 class ZoomableVerticalLayer: CALayer {
@@ -51,7 +51,7 @@ class ZoomableVerticalLayer: CALayer {
 
     /// 二维数组
     /// 从上往下排，画出选中的区域
-    var selectedAreas: [[ZoomableRulerSelectedArea]] = [] {
+    var selectedAreas: [[ZoomableRuler.SelectedArea]] = [] {
         didSet {
             CATransaction.begin()
             CATransaction.setDisableActions(true)
@@ -268,18 +268,20 @@ class ZoomableVerticalLayer: CALayer {
         }
     }
 
-    override func contains(_ p: CGPoint) -> Bool {
-        guard p.x > areaOriginX else { return true}
-        let lineIndex = Int(ceil(Double((p.x - areaOriginX)/(areaLineWidth+areaSpace)))) - 1
-        guard lineIndex < visiableFrames.count else { return true }
+    func point(_ point: CGPoint, ofAction action: ZoomableRuler.AreaAction) {
+        var matchID = ""
+        guard point.x > areaOriginX else { return }
+        let lineIndex = Int(ceil(Double((point.x - areaOriginX)/(areaLineWidth+areaSpace)))) - 1
+        guard lineIndex < visiableFrames.count else { return }
         let lineFrames = visiableFrames[lineIndex]
         for lineFramesID in lineFrames.keys {
-            if lineFrames[lineFramesID]?.contains(p) ?? false {
-                zoomableDelegate?.layer(self, didTapAreaID: lineFramesID)
+            if lineFrames[lineFramesID]?.contains(point) ?? false {
+                matchID = lineFramesID
                 break
             }
         }
-        return true
+        if matchID.count > 0 {
+            zoomableDelegate?.layer(self, areaID: matchID, withAction: action)
+        }
     }
-
 }

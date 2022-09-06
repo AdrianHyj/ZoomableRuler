@@ -80,7 +80,23 @@ class HorizontalViewController: UIViewController {
 }
 
 extension HorizontalViewController: ZoomableHorizontalRulerDelegate {
-    func ruler(_ ruler: ZoomableHorizontalRuler, requestColorWithArea area: ZoomableRulerSelectedArea) -> UIColor {
+    func ruler(_ ruler: ZoomableHorizontalRuler, reachMinimumValue unitValue: Double, offset: CGFloat) {
+        print("HR - reachMinimumValue \(unitValue), offset:\(offset)")
+    }
+
+    func ruler(_ ruler: ZoomableHorizontalRuler, reachMaximumValue unitValue: Double, offset: CGFloat) {
+        print("HR - reachMaximumValue \(unitValue), offset:\(offset)")
+    }
+
+    func ruler(_ ruler: ZoomableHorizontalRuler, areaID: String, withAction action: ZoomableRuler.AreaAction) {
+        print("HR - areaID \(areaID), withAction:\(action)")
+    }
+
+    func ruler(_ ruler: ZoomableHorizontalRuler, userDidMoveToValue unitValue: Double, range: ZoomableRuler.RangeState) {
+        print("HR - userDidMoveToValue \(unitValue), ZoomableRuler.RangeState:\(range)")
+    }
+
+    func ruler(_ ruler: ZoomableHorizontalRuler, requestColorWithArea area: ZoomableRuler.SelectedArea) -> UIColor {
         .green
     }
 

@@ -18,7 +18,7 @@ protocol ZoomableVerticalRulerDelegate: NSObjectProtocol {
     ///   - unitValue: 请求加载更多的边界值
     func ruler(_ ruler: ZoomableVerticalRuler, shouldShowMoreInfo block: @escaping (Bool)->(), lessThan unitValue: Double)
     /// 当前到达最小值
-    func rulerReachMinimumValue(_ ruler: ZoomableVerticalRuler)
+    func ruler(_ ruler: ZoomableVerticalRuler, reachMinimumValue unitValue: Double, offset: CGFloat)
     /// 是否可以加载更多
     /// - Parameters:
     ///   - ruler: 尺子实例
@@ -26,15 +26,15 @@ protocol ZoomableVerticalRulerDelegate: NSObjectProtocol {
     ///   - unitValue: 请求加载更多的边界值
     func ruler(_ ruler: ZoomableVerticalRuler, shouldShowMoreInfo block: @escaping (Bool)->(), moreThan unitValue: Double)
     /// 当前达到最大值
-    func rulerReachMaximumValue(_ ruler: ZoomableVerticalRuler)
+    func ruler(_ ruler: ZoomableVerticalRuler, reachMaximumValue unitValue: Double, offset: CGFloat)
     /// 点击了区域的id
-    func ruler(_ ruler: ZoomableVerticalRuler, didTapAreaID areaID: String)
+    func ruler(_ ruler: ZoomableVerticalRuler, areaID: String, withAction action: ZoomableRuler.AreaAction)
     /// 用户拖动到的值
-    func ruler(_ ruler: ZoomableVerticalRuler, userDidMoveToValue unitValue: Double)
+    func ruler(_ ruler: ZoomableVerticalRuler, userDidMoveToValue unitValue: Double, range: ZoomableRuler.RangeState)
     /// 用户拖动了ruler
     func userDidDragRuler(_ ruler: ZoomableVerticalRuler)
     /// 请求Area需要的颜色
-    func ruler(_ ruler: ZoomableVerticalRuler, requestColorWithArea area: ZoomableRulerSelectedArea) -> UIColor
+    func ruler(_ ruler: ZoomableVerticalRuler, requestColorWithArea area: ZoomableRuler.SelectedArea) -> UIColor
 }
 
 // (某个需求需要使用KVO)
@@ -53,6 +53,9 @@ protocol ZoomableVerticalRulerDelegate: NSObjectProtocol {
     var requestingMore = false
     /// 是否还有更大的值范围等待加载
     var hasMoreValue: Bool = true
+    /// 当前处于的范围状态
+    /// 超过最小值，超过最大值，正常
+    var rangeState: ZoomableRuler.RangeState = .normal
 
     /// 缩放时初始比例 (某个需求需要使用KVO)
     dynamic var startScale: CGFloat = 1
@@ -98,6 +101,8 @@ protocol ZoomableVerticalRulerDelegate: NSObjectProtocol {
     var pinchGesture: UIPinchGestureRecognizer?
     /// 点击手势
     var tapGesture: UITapGestureRecognizer?
+    /// 长按手势
+    var longPressGesture: UILongPressGestureRecognizer?
 
     /// 是否显示值刻度
     var showText: Bool = true {
@@ -109,7 +114,7 @@ protocol ZoomableVerticalRulerDelegate: NSObjectProtocol {
     /// 二维数组
     /// 从上往下排，画出选中的区域
     /// 同一排的数据，应排序好，item的startValue从小到大排序好
-    var selectedAreas: [[ZoomableRulerSelectedArea]] = [] {
+    var selectedAreas: [[ZoomableRuler.SelectedArea]] = [] {
         didSet {
             zoomableLayer?.selectedAreas = selectedAreas
         }
@@ -134,13 +139,17 @@ protocol ZoomableVerticalRulerDelegate: NSObjectProtocol {
 
         addSubview(scrollView)
 
-        let pichGR = UIPinchGestureRecognizer.init(target: self, action: #selector(pinchAction(recoginer:)))
+        let pichGR = UIPinchGestureRecognizer.init(target: self, action: #selector(pinchAction(recognizer:)))
         addGestureRecognizer(pichGR)
         pinchGesture = pichGR
 
-        let tabGR = UITapGestureRecognizer.init(target: self, action: #selector(tapAction(recoginer:)))
+        let tabGR = UITapGestureRecognizer.init(target: self, action: #selector(tapAction(recognizer:)))
         addGestureRecognizer(tabGR)
         tapGesture = tabGR
+
+        let longPressGR = UILongPressGestureRecognizer.init(target: self, action: #selector(longPressAction(recognizer:)))
+        addGestureRecognizer(longPressGR)
+        longPressGesture = longPressGR
     }
 
     required init?(coder: NSCoder) {
@@ -160,15 +169,15 @@ protocol ZoomableVerticalRulerDelegate: NSObjectProtocol {
         resetScrollView(withFrame: frame)
     }
 
-    @objc private func pinchAction(recoginer: UIPinchGestureRecognizer) -> Void {
+    @objc private func pinchAction(recognizer: UIPinchGestureRecognizer) -> Void {
         // 每一次 recognizer.scale 都是从大概1.0的左右开始缩小或者放大
-        if recoginer.state == .began {
-            pinchScale = recoginer.scale
+        if recognizer.state == .began {
+            pinchScale = recognizer.scale
             pinching = true
         }
-        else if recoginer.state == .changed {
+        else if recognizer.state == .changed {
             // 缩放时更新layerFrame
-            pinchScale = recoginer.scale / pinchScale
+            pinchScale = recognizer.scale / pinchScale
             if pinchScale * startScale > maxScale {
                 pinchScale = maxScale/startScale
             } else if pinchScale * startScale < minScale {
@@ -176,18 +185,27 @@ protocol ZoomableVerticalRulerDelegate: NSObjectProtocol {
             }
             startScale = pinchScale * startScale
             setNeedsLayout()
-        } else if recoginer.state == .ended || recoginer.state == .cancelled || recoginer.state == .failed {
+        } else if recognizer.state == .ended || recognizer.state == .cancelled || recognizer.state == .failed {
             pinching = false
         }
     }
 
-    @objc private func tapAction(recoginer: UITapGestureRecognizer) -> Void {
+    @objc private func tapAction(recognizer: UITapGestureRecognizer) -> Void {
         guard let zoomableLayer = zoomableLayer else {
             return
         }
-        let point = recoginer.location(in: scrollView)
+        let point = recognizer.location(in: scrollView)
         let layerPoint = zoomableLayer.convert(point, from: scrollView.layer)
-        let _ = zoomableLayer.contains(layerPoint)
+        zoomableLayer.point(layerPoint, ofAction: ZoomableRuler.AreaAction.tap)
+    }
+
+    @objc private func longPressAction(recognizer: UILongPressGestureRecognizer) -> Void {
+        guard let zoomableLayer = zoomableLayer else {
+            return
+        }
+        let point = recognizer.location(in: scrollView)
+        let layerPoint = zoomableLayer.convert(point, from: scrollView.layer)
+        zoomableLayer.point(layerPoint, ofAction: ZoomableRuler.AreaAction.longPress)
     }
 
     func refreshLayer() {
@@ -502,7 +520,7 @@ extension ZoomableVerticalRuler: UIScrollViewDelegate {
                 if !requestingLess {
                     requestingLess = true
                     // 节点的时间必须卡在每一个小时的0s，也就是 0:00/03:00/06:00
-                    let curlessValue = centerUnitValue - contentScreenHeight/2*pixelPerUnit
+                    let curlessValue = centerUnitValue - contentScreenHeight/2/pixelPerUnit
                     let (_, moreValue) = calculateEdgeValue(withUnitValue: curlessValue)
                     delegate?.ruler(self, shouldShowMoreInfo: { [weak self] should in
                         self?.requestingLess = false
@@ -513,14 +531,16 @@ extension ZoomableVerticalRuler: UIScrollViewDelegate {
                 }
                 return
             } else {
-                delegate?.rulerReachMinimumValue(self)
+                rangeState = .minimum
+                let offset = contentOffsetY + contentScreenHeight/2
+                delegate?.ruler(self, reachMinimumValue: Double(offset/pixelPerUnit), offset: offset)
             }
         } else if contentOffsetY - scrollView.contentInset.bottom > contentSizeHeight - contentScreenHeight {
             if hasMoreValue {
                 if !requestingMore {
                     requestingMore = true
                     // 节点的时间必须卡在每一个小时的0s，也就是 0:00/03:00/06:00
-                    let curlessValue = centerUnitValue + contentScreenHeight/2*pixelPerUnit
+                    let curlessValue = centerUnitValue + contentScreenHeight/2/pixelPerUnit
                     let (lessValue, _) = calculateEdgeValue(withUnitValue: curlessValue)
                     delegate?.ruler(self, shouldShowMoreInfo: { [weak self] should in
                         self?.requestingMore = false
@@ -531,8 +551,12 @@ extension ZoomableVerticalRuler: UIScrollViewDelegate {
                 }
                 return
             } else {
-                delegate?.rulerReachMaximumValue(self)
+                rangeState = .maximum
+                let offset = contentOffsetY + contentScreenHeight/2 - contentSizeHeight
+                delegate?.ruler(self, reachMaximumValue: Double(offset/pixelPerUnit), offset: offset)
             }
+        } else {
+            rangeState = .normal
         }
 
         if contentOffsetY + contentScreenHeight/2 > zoomableLayer.frame.minY + zoomableLayer.frame.size.height/2 + marginHeight {
@@ -581,15 +605,21 @@ extension ZoomableVerticalRuler: UIScrollViewDelegate {
     }
 
     func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        if !decelerate {
-            // 用户确定选择的话，不会有 decelerate的
-            delegate?.ruler(self, userDidMoveToValue: Double(centerUnitValue))
+        if rangeState == .normal {
+            // 如果在正常范围下dragging
+            if !decelerate {
+                // 用户确定选择的话，不会有 decelerate的
+                delegate?.ruler(self, userDidMoveToValue: Double(centerUnitValue), range: .normal)
+            }
+        } else {
+            // 如果在超出范围的情况下，不需要判断是否是decelerate，因为在超越滚动范围情况下end dragging，系统会自动弹回去，这个时候decelerate必然是true
+            delegate?.ruler(self, userDidMoveToValue: Double(centerUnitValue), range: rangeState)
         }
     }
 }
 
 extension ZoomableVerticalRuler: ZoomableVerticalLayerDataSource {
-    func layer(_ layer: ZoomableVerticalLayer, colorOfArea area: ZoomableRulerSelectedArea) -> UIColor {
+    func layer(_ layer: ZoomableVerticalLayer, colorOfArea area: ZoomableRuler.SelectedArea) -> UIColor {
         delegate?.ruler(self, requestColorWithArea: area) ?? .green
     }
 
@@ -599,8 +629,8 @@ extension ZoomableVerticalRuler: ZoomableVerticalLayerDataSource {
 }
 
 extension ZoomableVerticalRuler: ZoomableVerticalLayerDelegate {
-    func layer(_ layer: ZoomableVerticalLayer, didTapAreaID areaID: String) {
-        delegate?.ruler(self, didTapAreaID: areaID)
+    func layer(_ layer: ZoomableVerticalLayer, areaID: String, withAction action: ZoomableRuler.AreaAction) {
+        delegate?.ruler(self, areaID: areaID, withAction: action)
     }
 }
 

@@ -85,7 +85,23 @@ class VerticalViewController: UIViewController {
 }
 
 extension VerticalViewController: ZoomableVerticalRulerDelegate {
-    func ruler(_ ruler: ZoomableVerticalRuler, requestColorWithArea area: ZoomableRulerSelectedArea) -> UIColor {
+    func ruler(_ ruler: ZoomableVerticalRuler, reachMinimumValue unitValue: Double, offset: CGFloat) {
+        print("VR - ZoomableVerticalRuler \(unitValue), offset:\(offset)")
+    }
+
+    func ruler(_ ruler: ZoomableVerticalRuler, reachMaximumValue unitValue: Double, offset: CGFloat) {
+        print("VR - reachMaximumValue \(unitValue), offset:\(offset)")
+    }
+
+    func ruler(_ ruler: ZoomableVerticalRuler, areaID: String, withAction action: ZoomableRuler.AreaAction) {
+        print("VR - areaID \(areaID), action:\(action)")
+    }
+
+    func ruler(_ ruler: ZoomableVerticalRuler, userDidMoveToValue unitValue: Double, range: ZoomableRuler.RangeState) {
+        print("VR - userDidMoveToValue \(unitValue), ZoomableRuler.RangeState:\(range)")
+    }
+
+    func ruler(_ ruler: ZoomableVerticalRuler, requestColorWithArea area: ZoomableRuler.SelectedArea) -> UIColor {
         .green
     }
 

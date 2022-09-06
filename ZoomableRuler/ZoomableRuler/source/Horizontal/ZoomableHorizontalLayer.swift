@@ -11,10 +11,10 @@ protocol ZoomableHorizontalLayerDataSource: NSObjectProtocol {
     /// 显示文本的宽高
     func layerRequestLabelSize(_ layer: ZoomableHorizontalLayer) -> CGSize
     /// 显示选中区域的颜色
-    func layer(_ layer: ZoomableHorizontalLayer, colorOfArea area: ZoomableRulerSelectedArea) -> UIColor
+    func layer(_ layer: ZoomableHorizontalLayer, colorOfArea area: ZoomableRuler.SelectedArea) -> UIColor
 }
 protocol ZoomableHorizontalLayerDelegate: NSObjectProtocol {
-    func layer(_ layer: ZoomableHorizontalLayer, didTapAreaID areaID: String)
+    func layer(_ layer: ZoomableHorizontalLayer, areaID: String, withAction action: ZoomableRuler.AreaAction)
 }
 
 class ZoomableHorizontalLayer: CALayer {
@@ -51,7 +51,7 @@ class ZoomableHorizontalLayer: CALayer {
 
     /// 二维数组
     /// 从上往下排，画出选中的区域
-    var selectedAreas: [[ZoomableRulerSelectedArea]] = [] {
+    var selectedAreas: [[ZoomableRuler.SelectedArea]] = [] {
         didSet {
             CATransaction.begin()
             CATransaction.setDisableActions(true)
@@ -264,17 +264,20 @@ class ZoomableHorizontalLayer: CALayer {
         }
     }
 
-    override func contains(_ p: CGPoint) -> Bool {
-        guard p.y > areaOriginY else { return true}
-        let lineIndex = Int(ceil(Double((p.y - areaOriginY)/(areaLineHeight+areaSpace)))) - 1
-        guard lineIndex < visiableFrames.count else { return true }
+    func point(_ point: CGPoint, ofAction action: ZoomableRuler.AreaAction) {
+        var matchID = ""
+        guard point.y > areaOriginY else { return }
+        let lineIndex = Int(ceil(Double((point.y - areaOriginY)/(areaLineHeight+areaSpace)))) - 1
+        guard lineIndex < visiableFrames.count else { return }
         let lineFrames = visiableFrames[lineIndex]
         for lineFramesID in lineFrames.keys {
-            if lineFrames[lineFramesID]?.contains(p) ?? false {
-                zoomableDelegate?.layer(self, didTapAreaID: lineFramesID)
+            if lineFrames[lineFramesID]?.contains(point) ?? false {
+                matchID = lineFramesID
                 break
             }
         }
-        return true
+        if matchID.count > 0 {
+            zoomableDelegate?.layer(self, areaID: matchID, withAction: action)
+        }
     }
 }
