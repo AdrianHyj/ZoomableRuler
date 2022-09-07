@@ -29,7 +29,7 @@ protocol ZoomableHorizontalRulerDelegate: NSObjectProtocol {
     /// 点击了区域的id
     func ruler(_ ruler: ZoomableHorizontalRuler, areaID: String, withAction action: ZoomableRuler.AreaAction)
     /// 用户拖动到的值
-    func ruler(_ ruler: ZoomableHorizontalRuler, userDidMoveToValue unitValue: Double, range: ZoomableRuler.RangeState)
+    func ruler(_ ruler: ZoomableHorizontalRuler, userDidMoveToValue unitValue: Double, range: ZoomableRuler.RangeState, offset: CGFloat)
     /// 用户拖动了ruler
     func userDidDragRuler(_ ruler: ZoomableHorizontalRuler)
     /// 请求Area需要的颜色
@@ -66,8 +66,8 @@ protocol ZoomableHorizontalRulerDelegate: NSObjectProtocol {
     var minScale: CGFloat = 1
     /// 缩放时上一刻的比例
     var maxScale: CGFloat = 120
-       /// 是否在pinch来调整比例
-    var pinching: Bool = false
+    /// 是否在pinch来调整比例
+    dynamic var pinching: Bool = false
 
     /// 一屏内容所表达的大小
     let screenUnitValue: CGFloat = 3*3600.0
@@ -218,10 +218,15 @@ protocol ZoomableHorizontalRulerDelegate: NSObjectProtocol {
 
     func scrollToTime(_ timestamp: Double, forceRefresh: Bool = false) {
         guard let zLayer = zoomableLayer else { return }
+        // 强制更新就不用计算了
+        if forceRefresh {
+            centerUnitValue = timestamp
+            resetScrollView(withFrame: frame)
+        }
         let timePoint = CGPoint(x: zLayer.startPoint.x - scrollView.frame.size.width/2 + (timestamp - zLayer.centerUnitValue)*pixelPerUnit,
                                 y: 0)
         // 如果需求的点在当前scrollview的范围之外
-        if forceRefresh || (timePoint.x < -zLayer.startPoint.x + scrollView.contentInset.left) || (timePoint.x > scrollView.contentSize.width) {
+        if (timePoint.x < -zLayer.startPoint.x + scrollView.contentInset.left) || (timePoint.x > scrollView.contentSize.width) {
             centerUnitValue = timestamp
             resetScrollView(withFrame: frame)
         } else {
@@ -257,6 +262,8 @@ protocol ZoomableHorizontalRulerDelegate: NSObjectProtocol {
         zLayer.totalWidth = scrollViewContentWidth
         zLayer.scale = startScale
         zLayer.marginWidth = marginWidth
+        scrollView.layer.addSublayer(zLayer)
+        zoomableLayer = zLayer
 
         CATransaction.begin()
         CATransaction.setDisableActions(true)
@@ -266,8 +273,6 @@ protocol ZoomableHorizontalRulerDelegate: NSObjectProtocol {
                               width: (scrollViewContentWidth > layerMaxWidth ? layerMaxWidth : scrollViewContentWidth) + marginWidth*2,
                               height: scrollView.frame.size.height)
         CATransaction.commit()
-        scrollView.layer.addSublayer(zLayer)
-        zoomableLayer = zLayer
         // layout subview
         setNeedsLayout()
     }
@@ -536,7 +541,7 @@ extension ZoomableHorizontalRuler: UIScrollViewDelegate {
                 return
             } else {
                 rangeState = .minimum
-                let offset = contentOffsetX + contentScreenWidth/2
+                let offset = contentOffsetX + contentScreenWidth/2 - contentSizeWidth
                 delegate?.ruler(self, reachMinimumValue: Double(offset/pixelPerUnit), offset: offset)
             }
         } else if contentOffsetX - scrollView.contentInset.right > contentSizeWidth - contentScreenWidth {
@@ -613,11 +618,12 @@ extension ZoomableHorizontalRuler: UIScrollViewDelegate {
             // 如果在正常范围下dragging
             if !decelerate {
                 // 用户确定选择的话，不会有 decelerate的
-                delegate?.ruler(self, userDidMoveToValue: Double(centerUnitValue), range: .normal)
+                delegate?.ruler(self, userDidMoveToValue: Double(centerUnitValue), range: .normal, offset: 0)
             }
         } else {
             // 如果在超出范围的情况下，不需要判断是否是decelerate，因为在超越滚动范围情况下end dragging，系统会自动弹回去，这个时候decelerate必然是true
-            delegate?.ruler(self, userDidMoveToValue: Double(centerUnitValue), range: rangeState)
+            let offset = scrollView.contentOffset.x + scrollView.frame.size.width/2 - scrollView.contentSize.width
+            delegate?.ruler(self, userDidMoveToValue: Double(centerUnitValue), range: rangeState, offset: offset)
         }
     }
 }
