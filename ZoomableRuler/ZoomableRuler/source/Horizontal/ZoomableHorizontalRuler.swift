@@ -218,16 +218,23 @@ protocol ZoomableHorizontalRulerDelegate: NSObjectProtocol {
 
     func scrollToTime(_ timestamp: Double, forceRefresh: Bool = false) {
         guard let zLayer = zoomableLayer else { return }
+        var fixTimestamp = timestamp
+        if let maxValue = maxUnitValue, timestamp > maxValue {
+            fixTimestamp = maxValue
+        } else if let minValue = minUnitValue, timestamp < minValue {
+            fixTimestamp = minValue
+        }
         // 强制更新就不用计算了
         if forceRefresh {
-            centerUnitValue = timestamp
+            centerUnitValue = fixTimestamp
             resetScrollView(withFrame: frame)
+            return
         }
-        let timePoint = CGPoint(x: zLayer.startPoint.x - scrollView.frame.size.width/2 + (timestamp - zLayer.centerUnitValue)*pixelPerUnit,
+        let timePoint = CGPoint(x: zLayer.startPoint.x - scrollView.frame.size.width/2 + (fixTimestamp - zLayer.centerUnitValue)*pixelPerUnit,
                                 y: 0)
         // 如果需求的点在当前scrollview的范围之外
         if (timePoint.x < -zLayer.startPoint.x + scrollView.contentInset.left) || (timePoint.x > scrollView.contentSize.width) {
-            centerUnitValue = timestamp
+            centerUnitValue = fixTimestamp
             resetScrollView(withFrame: frame)
         } else {
             scrollView.contentOffset = timePoint
@@ -252,10 +259,10 @@ protocol ZoomableHorizontalRulerDelegate: NSObjectProtocol {
 
         // layer
         let zLayer = ZoomableHorizontalLayer(withStartPoint: startPoint,
-                                   screenUnitValue: screenUnitValue,
-                                   centerUnitValue: centerUnitValue,
-                                   pixelPerUnit: pixelPerUnit,
-                                   lineWidth: lineWidth)
+                                             screenUnitValue: screenUnitValue,
+                                             centerUnitValue: centerUnitValue,
+                                             pixelPerUnit: pixelPerUnit,
+                                             lineWidth: lineWidth)
         zLayer.showText = showText
         zLayer.zoomableDataSource = self
         zLayer.zoomableDelegate = self

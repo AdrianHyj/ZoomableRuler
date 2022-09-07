@@ -219,16 +219,23 @@ protocol ZoomableVerticalRulerDelegate: NSObjectProtocol {
 
     func scrollToTime(_ timestamp: Double, forceRefresh: Bool = false) {
         guard let zLayer = zoomableLayer else { return }
+        var fixTimestamp = timestamp
+        if let maxValue = maxUnitValue, timestamp > maxValue {
+            fixTimestamp = maxValue
+        } else if let minValue = minUnitValue, timestamp < minValue {
+            fixTimestamp = minValue
+        }
         // 强制更新就不用计算了
         if forceRefresh {
-            centerUnitValue = timestamp
+            centerUnitValue = fixTimestamp
             resetScrollView(withFrame: frame)
+            return
         }
         let timePoint = CGPoint(x: 0,
-                                y: zLayer.startPoint.y - scrollView.frame.size.height/2 + (timestamp - zLayer.centerUnitValue)*pixelPerUnit)
+                                y: zLayer.startPoint.y - scrollView.frame.size.height/2 + (fixTimestamp - zLayer.centerUnitValue)*pixelPerUnit)
         // 如果需求的点在当前scrollview的范围之外
         if (timePoint.y < -zLayer.startPoint.y + scrollView.contentInset.top) || (timePoint.y > scrollView.contentSize.height) {
-            centerUnitValue = timestamp
+            centerUnitValue = fixTimestamp
             resetScrollView(withFrame: frame)
         } else {
             scrollView.contentOffset = timePoint
