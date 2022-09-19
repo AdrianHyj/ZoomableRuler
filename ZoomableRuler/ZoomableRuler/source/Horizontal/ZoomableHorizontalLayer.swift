@@ -134,7 +134,8 @@ class ZoomableHorizontalLayer: CALayer {
                     // 第11条是短线，第12条是长线
                     let isLongLine = (preUnitCount+visibleIndex+1)%12 == 0
                     let upperLineRect = CGRect(x: offsetX + position - lineWidth/2, y: 0, width: 1, height: isLongLine ? longLineHeight : shortLineHeight)
-                    ctx.setFillColor(UIColor.white.cgColor)
+                    let color = isLongLine ? UIColor(hexString: "FFFFFF", alpha: 0.3)! : UIColor(hexString: "FFFFFF", alpha: 0.1)!
+                    ctx.setFillColor(color.cgColor)
                     ctx.fill(upperLineRect)
 
                     if isLongLine {

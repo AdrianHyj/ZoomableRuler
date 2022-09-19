@@ -137,7 +137,8 @@ class ZoomableVerticalLayer: CALayer {
                                                y: offsetY + position - lineHeight/2,
                                                width: isLongLine ? longLineWidth : shortLineWidth,
                                                height: 1)
-                    ctx.setFillColor(UIColor.white.cgColor)
+                    let color = isLongLine ? UIColor(hexString: "FFFFFF", alpha: 0.3)! : UIColor(hexString: "FFFFFF", alpha: 0.1)!
+                    ctx.setFillColor(color.cgColor)
                     ctx.fill(upperLineRect)
 
                     if isLongLine {
