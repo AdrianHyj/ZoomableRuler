@@ -80,6 +80,14 @@ class HorizontalViewController: UIViewController {
 }
 
 extension HorizontalViewController: ZoomableHorizontalRulerDelegate {
+    func ruler(_ ruler: ZoomableHorizontalRuler, userDidMoveToValue unitValue: Double, rangeState: ZoomableRuler.RangeState, offset: CGFloat) {
+        print("HR - userDidMoveToValue \(unitValue), ZoomableRuler.RangeState:\(rangeState)")
+    }
+
+    func ruler(_ ruler: ZoomableHorizontalRuler, rangeStateChange rangeState: ZoomableRuler.RangeState) {
+        //
+    }
+
     func ruler(_ ruler: ZoomableHorizontalRuler, reachMinimumValue unitValue: Double, offset: CGFloat) {
         print("HR - reachMinimumValue \(unitValue), offset:\(offset)")
     }

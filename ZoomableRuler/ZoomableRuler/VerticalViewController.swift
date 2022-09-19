@@ -85,6 +85,15 @@ class VerticalViewController: UIViewController {
 }
 
 extension VerticalViewController: ZoomableVerticalRulerDelegate {
+    func ruler(_ ruler: ZoomableVerticalRuler, userDidMoveToValue unitValue: Double, rangeState: ZoomableRuler.RangeState, offset: CGFloat) {
+        print("VR - userDidMoveToValue \(unitValue), ZoomableRuler.RangeState:\(rangeState)")
+        //
+    }
+
+    func ruler(_ ruler: ZoomableVerticalRuler, rangeStateChange rangeState: ZoomableRuler.RangeState) {
+        //
+    }
+
     func ruler(_ ruler: ZoomableVerticalRuler, reachMinimumValue unitValue: Double, offset: CGFloat) {
         print("VR - ZoomableVerticalRuler \(unitValue), offset:\(offset)")
     }

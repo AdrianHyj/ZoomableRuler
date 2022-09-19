@@ -29,11 +29,13 @@ protocol ZoomableHorizontalRulerDelegate: NSObjectProtocol {
     /// 点击了区域的id
     func ruler(_ ruler: ZoomableHorizontalRuler, areaID: String, withAction action: ZoomableRuler.AreaAction)
     /// 用户拖动到的值
-    func ruler(_ ruler: ZoomableHorizontalRuler, userDidMoveToValue unitValue: Double, range: ZoomableRuler.RangeState, offset: CGFloat)
+    func ruler(_ ruler: ZoomableHorizontalRuler, userDidMoveToValue unitValue: Double, rangeState: ZoomableRuler.RangeState, offset: CGFloat)
     /// 用户拖动了ruler
     func userDidDragRuler(_ ruler: ZoomableHorizontalRuler)
     /// 请求Area需要的颜色
     func ruler(_ ruler: ZoomableHorizontalRuler, requestColorWithArea area: ZoomableRuler.SelectedArea) -> UIColor
+    /// rangeState change
+    func ruler(_ ruler: ZoomableHorizontalRuler, rangeStateChange rangeState: ZoomableRuler.RangeState)
 }
 
 // (某个需求需要使用KVO)
@@ -54,12 +56,18 @@ protocol ZoomableHorizontalRulerDelegate: NSObjectProtocol {
     var hasMoreValue: Bool = true
     /// 当前处于的范围状态
     /// 超过最小值，超过最大值，正常
-    var rangeState: ZoomableRuler.RangeState = .normal
+    var rangeState: ZoomableRuler.RangeState = .normal {
+        didSet {
+            if oldValue != rangeState {
+                delegate?.ruler(self, rangeStateChange: rangeState)
+            }
+        }
+    }
 
     /// 缩放时初始比例 (某个需求需要使用KVO)
-    dynamic var startScale: CGFloat = 1
+    dynamic private(set) var startScale: CGFloat = 1
     /// 缩放时上一刻的比例
-    var preScale: CGFloat = 1
+    private(set) var preScale: CGFloat = 1
   /// 用户piching的比例
     var pinchScale: CGFloat = 1.0
    /// 缩放时上一刻的比例
@@ -153,6 +161,17 @@ protocol ZoomableHorizontalRulerDelegate: NSObjectProtocol {
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    /// 更改缩放比例（如果是初始化，建议两个参数都一样）
+    /// - Parameters:
+    ///   - startScale: 当前缩放比例
+    ///   - preScale: 缩放前比例
+    func sync(startScale: CGFloat, preScale: CGFloat?) {
+        self.startScale = startScale
+        if let preScale = preScale {
+            self.preScale = preScale
+        }
     }
 
     func setCenterUnitValue(_ value: Double, maxUnitValue: Double? = nil, minUnitValue: Double? = nil) {
@@ -625,12 +644,12 @@ extension ZoomableHorizontalRuler: UIScrollViewDelegate {
             // 如果在正常范围下dragging
             if !decelerate {
                 // 用户确定选择的话，不会有 decelerate的
-                delegate?.ruler(self, userDidMoveToValue: Double(centerUnitValue), range: .normal, offset: 0)
+                delegate?.ruler(self, userDidMoveToValue: Double(centerUnitValue), rangeState: .normal, offset: 0)
             }
         } else {
             // 如果在超出范围的情况下，不需要判断是否是decelerate，因为在超越滚动范围情况下end dragging，系统会自动弹回去，这个时候decelerate必然是true
             let offset = scrollView.contentOffset.x + scrollView.frame.size.width/2 - scrollView.contentSize.width
-            delegate?.ruler(self, userDidMoveToValue: Double(centerUnitValue), range: rangeState, offset: offset)
+            delegate?.ruler(self, userDidMoveToValue: Double(centerUnitValue), rangeState: rangeState, offset: offset)
         }
     }
 }
