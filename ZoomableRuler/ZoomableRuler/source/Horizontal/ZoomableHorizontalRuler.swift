@@ -282,7 +282,9 @@ protocol ZoomableHorizontalRulerDelegate: NSObjectProtocol {
                                              centerUnitValue: centerUnitValue,
                                              pixelPerUnit: pixelPerUnit,
                                              lineWidth: lineWidth)
+        // showText 和 selectAreas 的数据有可能是有的，在重新新建layer的时候，需要带上
         zLayer.showText = showText
+        zLayer.selectedAreas = selectedAreas
         zLayer.zoomableDataSource = self
         zLayer.zoomableDelegate = self
         zLayer.totalWidth = scrollViewContentWidth
